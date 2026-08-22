@@ -5,9 +5,9 @@
 
 ![Screenshot](.github/animation.gif)
 
-A lightweight Windows taskbar widget for people already using Claude Code, with optional Codex, Google Antigravity, OpenCode Go, Cursor, and OpenRouter usage display.
+A lightweight Windows taskbar widget for people already using Claude Code, with optional Codex, Google Antigravity, OpenCode Go, Cursor, OpenRouter, and OpenCode Zen usage display.
 
-It sits in your taskbar and shows how much of your Claude Code, Codex, Antigravity, OpenCode Go, Cursor, and/or OpenRouter usage window you have left, without needing to open the terminal or the provider site.
+It sits in your taskbar and shows how much of your Claude Code, Codex, Antigravity, OpenCode Go, Cursor, OpenRouter, and/or OpenCode Zen usage window you have left, without needing to open the terminal or the provider site.
 
 ## What You Get
 
@@ -18,6 +18,7 @@ It sits in your taskbar and shows how much of your Claude Code, Codex, Antigravi
 - Optional OpenCode Go usage bars for its 5-hour and most-constrained weekly/monthly window
 - Optional Cursor Auto and API plan usage bars
 - Optional OpenRouter credit balance usage bar
+- Optional OpenCode Zen estimated spend usage bar (approximate; see below)
 - A live countdown until each limit resets
 - A small native widget that lives directly in the Windows taskbar
 - A persistent application icon in the system tray
@@ -53,6 +54,8 @@ Cursor support is optional. Sign in to Cursor and enable **Cursor** in the dashb
 
 OpenRouter support is optional. OpenRouter is pay-as-you-go with no session or weekly window, so the widget shows how much of your lifetime purchased credits you have spent instead. Set `OPENROUTER_API_KEY` to an [OpenRouter API key](https://openrouter.ai/keys), then enable **OpenRouter** in the dashboard's **Providers** section. An account that has never topped up credits has nothing to gauge and shows no bar.
 
+OpenCode Zen support is optional, and unlike every other provider it is an **estimate, not a real reading**: OpenCode Zen has no published API for balance or usage, so the monitor runs `opencode stats --days 30 --models` and sums the cost of models billed through Zen (an `opencode/` or `opencode-go/` model name). That total is gauged against an assumed monthly cap with no official source — `$1000` by default, overridable with `OPENCODE_ZEN_MONTHLY_LIMIT_USD` — so treat the bar as directional, not authoritative. Install the `opencode` CLI, sign in, and make sure `opencode` is on `PATH`, then enable **OpenCode Zen** in the dashboard's **Providers** section.
+
 It works best if you want a simple "how close am I to the limit?" display that is always visible.
 
 ## Requirements
@@ -64,6 +67,7 @@ It works best if you want a simple "how close am I to the limit?" display that i
 - Optional: OpenCode installed and connected to OpenCode Go, if you want OpenCode usage
 - Optional: an OpenRouter API key, if you want OpenRouter usage
 - Optional: Cursor installed and authenticated, if you want Cursor usage
+- Optional: the `opencode` CLI installed, authenticated, and on `PATH`, if you want an OpenCode Zen spend estimate
 
 If you use Claude Code through WSL, that is supported too. The monitor can read your Claude Code credentials from Windows or from your WSL environment.
 
@@ -137,7 +141,9 @@ Data names use the same structure for `claude`, `codex`, `antigravity`, `opencod
 
 The OpenCode Go provider additionally exposes its monthly window while it is available: `{opencode.monthly.percentage}`, `{opencode.monthly.remaining}`, `{opencode.monthly.label}` (`30d`), `{opencode.monthly.reset.*}`, and `{opencode.monthly.available}` (1 when monthly data is present, otherwise 0). The `weekly` bar keeps its automatic 7d/30d selection unchanged; use `{provider}.monthly.available` in a render expression to show monthly elements only when the dashboard reports a monthly window.
 
-A provider with paid credits on top of (or instead of) its ordinary windows exposes `{provider}.credits.percentage`, `{provider}.credits.remaining`, `{provider}.credits.balance` and `{provider}.credits.total` (both in whole currency units), and `{provider}.credits.available` (1 once a credit baseline exists, otherwise 0). Claude and Codex use this as an overlay once their included allowance is spent; OpenRouter has no session or weekly window of its own, so `openrouter.credits.*` is its only meaningful data and `openrouter.headline.percentage` already resolves to it.
+A provider with paid credits on top of (or instead of) its ordinary windows exposes `{provider}.credits.percentage`, `{provider}.credits.remaining`, `{provider}.credits.balance` and `{provider}.credits.total` (both in whole currency units), and `{provider}.credits.available` (1 once a credit baseline exists, otherwise 0). Claude and Codex use this as an overlay once their included allowance is spent; OpenRouter and OpenCode Zen have no session or weekly window of their own, so `{provider}.credits.*` is their only meaningful data and `{provider}.headline.percentage` already resolves to it.
+
+Providers can also expose a free-text `{provider}.detail` line for information that does not fit the usual figures. OpenCode Zen uses it for its top spending models, e.g. `opencode/claude-sonnet-5 $12.34, opencode-go/gpt-5-mini $3.20`; every other provider leaves it empty.
 
 The `providers.*.enabled` values reflect the dashboard settings rather than temporary polling availability, so a provider error does not unexpectedly reflow the widget. For example, `ceil(10 / max(1, providers.count))` produces the classic adaptive segment count.
 
@@ -163,12 +169,13 @@ Use the dashboard's **Providers** section to choose what the widget displays:
 - **OpenCode** can be enabled alongside the other providers or shown by itself
 - **Cursor** can be enabled alongside the other providers or shown by itself
 - **OpenRouter** can be enabled alongside the other providers or shown by itself
+- **OpenCode Zen** can be enabled alongside the other providers or shown by itself; its figures are an estimate (see [Who This Is For](#who-this-is-for))
 
 When multiple models are shown, each model has its own usage bar and matching usage text color. Antigravity prefers Google's Gemini quota summary when available and falls back to model quota data when needed.
 
 ### System Tray Icons
 
-The default Classic theme includes separate Claude Code, Codex, Antigravity, OpenCode, Cursor, and OpenRouter tray-icon roots. Each root uses `providers.<provider>.enabled` as its Render expression, so only enabled providers are registered with Explorer. Clicking or double-clicking one toggles the `main` taskbar root's Render value, and right-clicking either a provider icon or the taskbar widget opens the built-in `classic-v1` context menu. A custom theme with no Tray Icon roots falls back to one persistent application icon using `src/icons/icon.ico`. When upgrading directly from v1.4.9, a saved `widget_visible: false` preference creates and selects a writable **Migrated Theme** copy with `main.render` set to `false`; user-selected custom themes are left unchanged.
+The default Classic theme includes separate Claude Code, Codex, Antigravity, OpenCode, Cursor, OpenRouter, and OpenCode Zen tray-icon roots. Each root uses `providers.<provider>.enabled` as its Render expression, so only enabled providers are registered with Explorer. Clicking or double-clicking one toggles the `main` taskbar root's Render value, and right-clicking either a provider icon or the taskbar widget opens the built-in `classic-v1` context menu. A custom theme with no Tray Icon roots falls back to one persistent application icon using `src/icons/icon.ico`. When upgrading directly from v1.4.9, a saved `widget_visible: false` preference creates and selects a writable **Migrated Theme** copy with `main.render` set to `false`; user-selected custom themes are left unchanged.
 
 Theme Studio's **Context Menus** page supports action items, submenus, separators, and non-clickable Text items. Labels on Text, action, and submenu items are live text templates, so they can show usage values, reset countdowns, provider state, or the app version. The **ƒx Values** helper inserts the same usage and formatting tokens available to theme text layers.
 
@@ -218,6 +225,7 @@ What the app reads:
 - If OpenCode is enabled, its dashboard workspace ID and auth cookie
 - If Cursor is enabled, its access token from Cursor's local `state.vscdb`, or `CURSOR_SESSION_TOKEN` when set
 - If OpenRouter is enabled, the API key in the `OPENROUTER_API_KEY` environment variable
+- If OpenCode Zen is enabled, it reads nothing itself: it runs the locally installed `opencode stats --days 30 --models` and parses its terminal output, so `opencode` handles its own authentication
 
 OpenCode dashboard credentials supplied through a JSON config file are stored as plain text in that file. Protect it with the same care as a browser session cookie.
 
@@ -229,6 +237,7 @@ What the app sends over the network:
 - Requests to the OpenCode workspace dashboard to read OpenCode Go usage, if OpenCode is enabled and dashboard credentials are configured
 - Requests to `cursor.com/api/usage-summary` to read Cursor plan usage, if Cursor is enabled
 - Requests to `openrouter.ai/api/v1/credits` to read your OpenRouter credit balance, if OpenRouter is enabled
+- No request of its own for OpenCode Zen; whatever the `opencode` CLI itself calls when `opencode stats` runs is outside this app's control
 - Requests to GitHub only if you use the app's update check / self-update feature
 - If proxy environment variables such as `HTTPS_PROXY`, `HTTP_PROXY`, or `ALL_PROXY` are set, those outbound requests may use that proxy
 

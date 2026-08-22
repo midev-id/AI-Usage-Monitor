@@ -92,6 +92,7 @@ fn poll_dashboard(credentials: &DashboardCredentials) -> Result<UsageData, PollE
             .as_ref()
             .map(|window| section_from_window(window, now)),
         credits: None,
+        detail: None,
         stale: false,
     })
 }

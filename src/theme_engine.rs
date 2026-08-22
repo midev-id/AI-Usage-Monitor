@@ -1411,6 +1411,12 @@ impl DataContext {
             &format!("{name}.credits.available"),
             credits.is_some() as u8 as f64,
         );
+        self.insert_string(
+            &format!("{name}.detail"),
+            usage
+                .and_then(|usage| usage.detail.as_deref())
+                .unwrap_or(""),
+        );
         // The single figure a badge should show: whatever is closest to its
         // limit. A provider can switch a window off entirely -- Codex has its
         // five-hour window disabled -- so binding a badge to one window alone

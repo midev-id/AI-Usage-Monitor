@@ -1599,6 +1599,202 @@
               "color": "#4749B0FF"
             }
           }
+        },
+        {
+          "id": "opencode-zen-provider",
+          "name": "OpenCode Zen provider",
+          "render": "providers.opencode_zen.enabled",
+          "parent": "provider-row",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "height": "46"
+        },
+        {
+          "id": "opencode-zen-spent-segments-dark",
+          "name": "dark OpenCode Zen spend segments",
+          "render": "system.dark",
+          "parent": "opencode-zen-provider",
+          "y": "5",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "opencode_zen.credits.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#1FA97AFF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "opencode-zen-spent-value-dark",
+          "name": "dark OpenCode Zen spend value",
+          "render": "system.dark",
+          "parent": "opencode-zen-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "5",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "${opencode_zen.credits.balance:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#7CE0C0FF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-spent-segments-light",
+          "name": "light OpenCode Zen spend segments",
+          "render": "1 - system.dark",
+          "parent": "opencode-zen-provider",
+          "y": "5",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "opencode_zen.credits.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#1FA97AFF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "opencode-zen-spent-value-light",
+          "name": "light OpenCode Zen spend value",
+          "render": "1 - system.dark",
+          "parent": "opencode-zen-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "5",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "${opencode_zen.credits.balance:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#146B4EFF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-cap-segments-dark",
+          "name": "dark OpenCode Zen cap segments",
+          "render": "system.dark",
+          "parent": "opencode-zen-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "opencode_zen.credits.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#1FA97AFF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "opencode-zen-cap-value-dark",
+          "name": "dark OpenCode Zen cap value",
+          "render": "system.dark",
+          "parent": "opencode-zen-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "/${opencode_zen.credits.total:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#7CE0C0FF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-cap-segments-light",
+          "name": "light OpenCode Zen cap segments",
+          "render": "1 - system.dark",
+          "parent": "opencode-zen-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "opencode_zen.credits.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#1FA97AFF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "opencode-zen-cap-value-light",
+          "name": "light OpenCode Zen cap value",
+          "render": "1 - system.dark",
+          "parent": "opencode-zen-provider",
+          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "y": "28",
+          "width": "62",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "/${opencode_zen.credits.total:0.00}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "left",
+            "color": {
+              "color": "#146B4EFF"
+            }
+          }
         }
       ]
     },
@@ -2734,6 +2930,174 @@
             "align": "center",
             "color": {
               "color": "#6467F2FF"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "opencode-zen-tray-icon",
+      "name": "OpenCode Zen usage",
+      "render": "providers.opencode_zen.enabled",
+      "mouse_events": {
+        "click": "toggle(\"main\", render)",
+        "double_click": "toggle(\"main\", render)",
+        "right_click": "show_context_menu(\"classic-v1\")"
+      },
+      "placement": {
+        "nest": "tray_icon"
+      },
+      "width": "64",
+      "height": "64",
+      "background": {
+        "type": "colour",
+        "colour": {
+          "color": "#FFFFFFFF"
+        }
+      },
+      "corner_radius": "3",
+      "children": [
+        {
+          "id": "opencode-zen-tray-high-outline",
+          "name": "OpenCode Zen high-usage outline",
+          "render": "opencode_zen.headline.percentage >= 90",
+          "parent": "opencode-zen-tray-icon",
+          "width": "64",
+          "height": "64",
+          "background": {
+            "type": "colour",
+            "colour": {
+              "color": "#1FA97AFF"
+            }
+          },
+          "corner_radius": "3"
+        },
+        {
+          "id": "opencode-zen-tray-low-fill",
+          "name": "OpenCode Zen normal fill",
+          "render": "opencode_zen.headline.percentage < 90",
+          "parent": "opencode-zen-tray-icon",
+          "x": "3",
+          "y": "3",
+          "width": "58",
+          "height": "58",
+          "background": {
+            "type": "colour",
+            "colour": {
+              "color": "#1FA97AFF"
+            }
+          },
+          "corner_radius": "1"
+        },
+        {
+          "id": "opencode-zen-tray-high-fill",
+          "name": "OpenCode Zen high-usage white fill",
+          "render": "opencode_zen.headline.percentage >= 90",
+          "parent": "opencode-zen-tray-icon",
+          "x": "3",
+          "y": "3",
+          "width": "58",
+          "height": "58",
+          "background": {
+            "type": "colour",
+            "colour": {
+              "color": "#FFFFFFFF"
+            }
+          },
+          "corner_radius": "1"
+        },
+        {
+          "id": "opencode-zen-tray-placeholder",
+          "name": "OpenCode Zen loading placeholder",
+          "render": "data.poll_ok == 0 || opencode_zen.available == 0",
+          "parent": "opencode-zen-tray-icon",
+          "width": "64",
+          "height": "64",
+          "content": {
+            "type": "text",
+            "template": "Zn",
+            "font_family": "Arial Bold",
+            "font_size": "34",
+            "weight": "bold",
+            "align": "center",
+            "color": {
+              "color": "#FFFFFFFF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-tray-low-one-digit",
+          "name": "OpenCode Zen normal one-digit percentage",
+          "render": "data.poll_ok && opencode_zen.available && opencode_zen.headline.percentage < 9.5",
+          "parent": "opencode-zen-tray-icon",
+          "width": "64",
+          "height": "64",
+          "content": {
+            "type": "text",
+            "template": "{opencode_zen.headline.percentage:0}",
+            "font_family": "Arial Bold",
+            "font_size": "50",
+            "weight": "bold",
+            "align": "center",
+            "color": {
+              "color": "#FFFFFFFF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-tray-low-two-digits",
+          "name": "OpenCode Zen normal two-digit percentage",
+          "render": "data.poll_ok && opencode_zen.available && opencode_zen.headline.percentage >= 9.5 && opencode_zen.headline.percentage < 90",
+          "parent": "opencode-zen-tray-icon",
+          "width": "64",
+          "height": "64",
+          "content": {
+            "type": "text",
+            "template": "{opencode_zen.headline.percentage:0}",
+            "font_family": "Arial Bold",
+            "font_size": "42",
+            "weight": "bold",
+            "align": "center",
+            "color": {
+              "color": "#FFFFFFFF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-tray-high-two-digits",
+          "name": "OpenCode Zen high-usage two-digit percentage",
+          "render": "data.poll_ok && opencode_zen.available && opencode_zen.headline.percentage >= 90 && opencode_zen.headline.percentage < 99.5",
+          "parent": "opencode-zen-tray-icon",
+          "width": "64",
+          "height": "64",
+          "content": {
+            "type": "text",
+            "template": "{opencode_zen.headline.percentage:0}",
+            "font_family": "Arial Bold",
+            "font_size": "42",
+            "weight": "bold",
+            "align": "center",
+            "color": {
+              "color": "#1FA97AFF"
+            }
+          }
+        },
+        {
+          "id": "opencode-zen-tray-high-three-digits",
+          "name": "OpenCode Zen high-usage three-digit percentage",
+          "render": "data.poll_ok && opencode_zen.available && opencode_zen.headline.percentage >= 99.5",
+          "parent": "opencode-zen-tray-icon",
+          "width": "64",
+          "height": "64",
+          "content": {
+            "type": "text",
+            "template": "{opencode_zen.headline.percentage:0}",
+            "font_family": "Arial Bold",
+            "font_size": "30",
+            "weight": "bold",
+            "align": "center",
+            "color": {
+              "color": "#1FA97AFF"
             }
           }
         }
