@@ -83,6 +83,7 @@ fn claude_failure_does_not_block_codex_when_both_are_enabled() {
             ProviderId::Antigravity => unreachable!("antigravity is disabled"),
             ProviderId::OpenCode => unreachable!("OpenCode is disabled"),
             ProviderId::Cursor => unreachable!("Cursor is disabled"),
+            ProviderId::OpenRouter => unreachable!("OpenRouter is disabled"),
         },
     )
     .expect("codex data should keep the poll successful");
@@ -104,6 +105,7 @@ fn codex_failure_does_not_block_claude_when_both_are_enabled() {
             ProviderId::Antigravity => unreachable!("antigravity is disabled"),
             ProviderId::OpenCode => unreachable!("OpenCode is disabled"),
             ProviderId::Cursor => unreachable!("Cursor is disabled"),
+            ProviderId::OpenRouter => unreachable!("OpenRouter is disabled"),
         },
     )
     .expect("claude data should keep the poll successful");
@@ -125,6 +127,7 @@ fn returns_first_error_when_no_enabled_provider_succeeds() {
             ProviderId::Antigravity => Err(PollError::NoCredentials),
             ProviderId::OpenCode => Err(PollError::NoCredentials),
             ProviderId::Cursor => Err(PollError::NoCredentials),
+            ProviderId::OpenRouter => Err(PollError::NoCredentials),
         },
     )
     .expect_err("all-provider failure should return an error");
@@ -192,6 +195,7 @@ fn antigravity_failure_does_not_block_codex_when_both_are_enabled() {
             ProviderId::Antigravity => Err(PollError::NoCredentials),
             ProviderId::OpenCode => unreachable!("OpenCode is disabled"),
             ProviderId::Cursor => unreachable!("Cursor is disabled"),
+            ProviderId::OpenRouter => unreachable!("OpenRouter is disabled"),
         },
     )
     .expect("codex data should keep the poll successful");
@@ -213,6 +217,7 @@ fn opencode_failure_does_not_block_codex_when_both_are_enabled() {
             ProviderId::Antigravity => unreachable!("Antigravity is disabled"),
             ProviderId::OpenCode => Err(PollError::NoCredentials),
             ProviderId::Cursor => unreachable!("Cursor is disabled"),
+            ProviderId::OpenRouter => unreachable!("OpenRouter is disabled"),
         },
     )
     .expect("Codex data should keep the poll successful");

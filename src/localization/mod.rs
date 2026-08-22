@@ -89,6 +89,10 @@ impl LanguageId {
                 strings.cursor_token_expired_title,
                 strings.cursor_token_expired_body,
             ),
+            ProviderId::OpenRouter => (
+                strings.openrouter_token_expired_title,
+                strings.openrouter_token_expired_body,
+            ),
         }
     }
 
@@ -136,6 +140,7 @@ pub struct Strings {
     pub antigravity_model: &'static str,
     pub opencode_model: &'static str,
     pub cursor_model: &'static str,
+    pub openrouter_model: &'static str,
     pub settings: &'static str,
     pub start_with_windows: &'static str,
     pub language: &'static str,
@@ -171,10 +176,13 @@ pub struct Strings {
     pub opencode_token_expired_body: &'static str,
     pub cursor_token_expired_title: &'static str,
     pub cursor_token_expired_body: &'static str,
+    pub openrouter_token_expired_title: &'static str,
+    pub openrouter_token_expired_body: &'static str,
     pub codex_window_title: &'static str,
     pub antigravity_window_title: &'static str,
     pub opencode_window_title: &'static str,
     pub cursor_window_title: &'static str,
+    pub openrouter_window_title: &'static str,
 }
 
 pub fn resolve_language(language_override: Option<LanguageId>) -> LanguageId {
