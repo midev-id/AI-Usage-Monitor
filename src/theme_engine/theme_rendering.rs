@@ -162,6 +162,35 @@ pub fn render_theme_surface_with_runtime_at_scale(
     }
 }
 
+pub fn hidden_surface_warning(
+    theme: &ThemeDocument,
+    surface_index: usize,
+    data: Option<&AppUsageData>,
+    runtime: ThemeRuntime,
+) -> Option<String> {
+    if surface_index != 0 {
+        return None;
+    }
+    let surface = theme.surfaces.get(surface_index)?;
+    let (width, height) = resolve_surface_size(theme, surface_index, data, runtime);
+    let canvas = Canvas {
+        width,
+        width_expression: Some(surface.width.clone()),
+        height,
+        height_expression: Some(surface.height.clone()),
+        background: surface.background.canvas_paint(),
+    };
+    let context = DataContext::from_usage_with_runtime(data, &canvas, runtime);
+    match evaluate(&surface.render.0, &context) {
+        Ok(value) if value.is_finite() && value == 0.0 => Some(format!(
+            "The main widget ('{name}') is hidden because its render expression evaluated to 0. \
+             To show it again, open Theme Studio, select '{name}', and set Render to a non-zero value (e.g. 1).",
+            name = surface.name
+        )),
+        _ => None,
+    }
+}
+
 pub(super) fn normalized_render_scale(scale: f64) -> f64 {
     if scale.is_finite() && scale > 0.0 {
         scale.clamp(0.25, 8.0)

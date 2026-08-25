@@ -876,6 +876,18 @@ fn surface_render_and_visibility_are_expression_driven() {
 }
 
 #[test]
+fn hidden_main_surface_reports_a_warning() {
+    let mut theme = ThemeDocument::starter();
+    theme.surfaces[0].render = 0.0.into();
+
+    let warning = hidden_surface_warning(&theme, 0, None, ThemeRuntime::default()).unwrap();
+
+    assert!(warning.contains("main widget"));
+    assert!(warning.contains("render"));
+    assert_eq!(hidden_surface_warning(&theme, 1, None, ThemeRuntime::default()), None);
+}
+
+#[test]
 fn surface_placement_offsets_are_expression_driven() {
     let mut theme = ThemeDocument::starter();
     let surface = &mut theme.surfaces[0];
