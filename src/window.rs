@@ -583,11 +583,35 @@ fn sync_tray_icon(hwnd: HWND) {
                     })
                 })
                 .collect::<Vec<_>>();
-            tray_icon::sync_themed(hwnd, &icons);
+            if icons.is_empty() {
+                tray_icon::sync(hwnd, &tray_icon_tooltip_from_state());
+            } else {
+                tray_icon::sync_themed(hwnd, &icons);
+            }
             return;
         }
     }
     tray_icon::sync(hwnd, &tray_icon_tooltip_from_state());
+}
+
+fn warn_if_main_surface_hidden(hwnd: HWND) {
+    let warning = {
+        let state = lock_state();
+        state.as_ref().and_then(|state| {
+            effective_theme_from_state(state).and_then(|theme| {
+                theme_engine::hidden_surface_warning(
+                    &theme,
+                    0,
+                    state.data.as_ref(),
+                    theme_runtime_for_surface(&theme, 0, theme_runtime_from_state(state)),
+                )
+            })
+        })
+    };
+    if let Some(warning) = warning {
+        diagnose::log(&warning);
+        tray_icon::notify_balloon(hwnd, "Theme warning", &warning);
+    }
 }
 
 fn taskbar_created_message() -> u32 {
@@ -1692,6 +1716,7 @@ pub fn run() {
 
         // Initial render using the presenter selected by the surface nest.
         render_layered();
+        warn_if_main_surface_hidden(hwnd);
 
         if open_dashboard_on_start {
             crate::dashboard::show(hwnd);
@@ -2161,6 +2186,7 @@ fn reload_external_settings(hwnd: HWND) {
     sync_tray_icon(hwnd);
     position_at_taskbar();
     render_layered();
+    warn_if_main_surface_hidden(hwnd);
 }
 
 fn suppress_tray_reposition_for(duration: Duration) {
