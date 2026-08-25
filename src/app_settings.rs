@@ -54,6 +54,10 @@ pub struct SettingsFile {
     show_opencode: bool,
     #[serde(default)]
     show_cursor: bool,
+    #[serde(default)]
+    show_openrouter: bool,
+    #[serde(default)]
+    show_opencode_zen: bool,
     #[serde(default = "default_true")]
     pub custom_theme_enabled: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -80,6 +84,8 @@ impl Default for SettingsFile {
             show_antigravity: false,
             show_opencode: false,
             show_cursor: false,
+            show_openrouter: false,
+            show_opencode_zen: false,
             custom_theme_enabled: true,
             active_theme_path: None,
             dashboard_width: None,
@@ -154,6 +160,8 @@ impl SettingsFile {
             ProviderId::Antigravity => self.show_antigravity,
             ProviderId::OpenCode => self.show_opencode,
             ProviderId::Cursor => self.show_cursor,
+            ProviderId::OpenRouter => self.show_openrouter,
+            ProviderId::OpenCodeZen => self.show_opencode_zen,
         }
     }
 
@@ -164,6 +172,8 @@ impl SettingsFile {
             ProviderId::Antigravity => self.show_antigravity = enabled,
             ProviderId::OpenCode => self.show_opencode = enabled,
             ProviderId::Cursor => self.show_cursor = enabled,
+            ProviderId::OpenRouter => self.show_openrouter = enabled,
+            ProviderId::OpenCodeZen => self.show_opencode_zen = enabled,
         }
     }
 

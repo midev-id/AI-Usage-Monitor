@@ -309,6 +309,7 @@ fn usage_lines_handle_loading_errors_missing_resets_and_language() {
             weekly_label: None,
             monthly: None,
             credits: None,
+            detail: None,
             stale: false,
         },
     )]);
@@ -368,9 +369,12 @@ fn starter_theme_round_trips_and_validates() {
         .collect::<Vec<_>>();
     // Classic contains separate light and dark progress layers so the
     // 1.4.9 palette follows the taskbar mode without runtime recolouring:
-    // five providers over two windows in two modes, plus a credit overlay on
-    // the weekly row of the two providers that report credits.
-    assert_eq!(segments, vec![10; 5 * 2 * 2 + 2 * 2]);
+    // seven providers over two windows in two modes, plus a credit overlay on
+    // the weekly row of the two providers that report credits alongside a
+    // session/weekly window (OpenRouter and OpenCode Zen have no such window
+    // of their own, so their two rows each count as an ordinary provider
+    // rather than an extra overlay).
+    assert_eq!(segments, vec![10; 7 * 2 * 2 + 2 * 2]);
     assert!(theme.surfaces[0]
         .children
         .iter()
@@ -483,6 +487,7 @@ fn reset_stats_and_duration_formats_are_available_to_every_provider() {
             weekly_label: None,
             monthly: None,
             credits: None,
+            detail: None,
             stale: false,
         },
     )]);
@@ -913,7 +918,7 @@ fn starter_adapts_width_segments_and_collapsed_provider_rows() {
         ),
         (
             ThemeRuntime::from_providers(ProviderSet::from_enabled(ProviderId::ALL)),
-            545,
+            725,
             2,
         ),
     ] {
@@ -989,7 +994,7 @@ fn starter_has_a_taskbar_widget_and_provider_tray_icons() {
         theme.surfaces[0].placement.reference.region,
         ReferenceRegion::SystemTray
     );
-    assert_eq!(theme.surfaces.len(), 6);
+    assert_eq!(theme.surfaces.len(), 8);
     assert!(theme.surfaces[1..]
         .iter()
         .all(|surface| surface.placement.nest == SurfaceNest::TrayIcon));

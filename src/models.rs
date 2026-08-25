@@ -41,6 +41,11 @@ pub struct UsageData {
     pub monthly: Option<UsageSection>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub credits: Option<CreditsSection>,
+    /// Free-text supplementary line a provider can offer alongside its usual
+    /// figures (e.g. OpenCode Zen's top spending models). Most providers leave
+    /// this unset; themes bind it through `{provider}.detail`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
     /// True when this reading was carried over from an earlier poll because
     /// the provider failed this cycle. The figures are real, just not current.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]

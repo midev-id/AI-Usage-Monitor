@@ -146,6 +146,8 @@ mod claude_desktop;
 mod codex;
 mod cursor;
 mod opencode;
+mod opencode_zen;
+mod openrouter;
 
 struct ProviderPoller {
     id: ProviderId,
@@ -153,7 +155,7 @@ struct ProviderPoller {
     credential_watch: fn(bool) -> CredentialWatchSnapshot,
 }
 
-const PROVIDER_POLLERS: [ProviderPoller; 5] = [
+const PROVIDER_POLLERS: [ProviderPoller; 7] = [
     ProviderPoller {
         id: ProviderId::Claude,
         poll: claude::poll_claude_code,
@@ -178,6 +180,16 @@ const PROVIDER_POLLERS: [ProviderPoller; 5] = [
         id: ProviderId::Cursor,
         poll: cursor::poll_cursor,
         credential_watch: cursor::credential_watch_snapshot,
+    },
+    ProviderPoller {
+        id: ProviderId::OpenRouter,
+        poll: openrouter::poll_openrouter,
+        credential_watch: openrouter::credential_watch_snapshot,
+    },
+    ProviderPoller {
+        id: ProviderId::OpenCodeZen,
+        poll: opencode_zen::poll_opencode_zen,
+        credential_watch: opencode_zen::credential_watch_snapshot,
     },
 ];
 
