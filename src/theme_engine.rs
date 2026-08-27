@@ -2268,6 +2268,8 @@ pub fn validate_template(template: &str, context: &DataContext) -> Vec<String> {
                 && format_usage_line(expression, context).is_some())
             || (format.eq_ignore_ascii_case("usage_badge")
                 && format_usage_badge(expression, context).is_some())
+            || (format.eq_ignore_ascii_case("usage_reset")
+                && format_usage_reset(expression, context).is_some())
         {
             remaining = &remaining[end + 1..];
             continue;

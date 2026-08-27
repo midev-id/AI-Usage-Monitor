@@ -32,6 +32,9 @@ pub fn format_template(template: &str, context: &DataContext) -> String {
         } else if format.eq_ignore_ascii_case("usage_badge") {
             output
                 .push_str(&format_usage_badge(expression, context).unwrap_or_else(|| "--".into()));
+        } else if format.eq_ignore_ascii_case("usage_reset") {
+            output
+                .push_str(&format_usage_reset(expression, context).unwrap_or_else(|| "--".into()));
         } else {
             match evaluate(expression, context) {
                 Ok(value) => output.push_str(&format_value(value, format, context)),

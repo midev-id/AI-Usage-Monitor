@@ -338,15 +338,72 @@ fn usage_lines_handle_loading_errors_missing_resets_and_language() {
 }
 
 #[test]
+fn usage_reset_is_the_line_minus_its_percentage() {
+    let canvas = Canvas::default();
+    let loading = DataContext::from_usage_with_runtime(
+        None,
+        &canvas,
+        ThemeRuntime::default().with_poll_state(false, false),
+    );
+    assert_eq!(
+        format_template("{claude.session:usage_reset}", &loading),
+        "--"
+    );
+
+    let failed = DataContext::from_usage_with_runtime(
+        None,
+        &canvas,
+        ThemeRuntime::default().with_poll_state(false, true),
+    );
+    assert_eq!(
+        format_template("{claude.session:usage_reset}", &failed),
+        "!"
+    );
+
+    let no_reset = AppUsageData::from_iter([(
+        ProviderId::Claude,
+        crate::models::UsageData {
+            session: crate::models::UsageSection {
+                percentage: 25.0,
+                resets_at: None,
+            },
+            ..Default::default()
+        },
+    )]);
+    let ready = DataContext::from_usage_with_runtime(Some(&no_reset), &canvas, ThemeRuntime::default());
+    assert_eq!(format_template("{claude.session:usage_reset}", &ready), "");
+
+    let with_reset = AppUsageData::from_iter([(
+        ProviderId::Claude,
+        crate::models::UsageData {
+            session: crate::models::UsageSection {
+                percentage: 25.0,
+                resets_at: Some(std::time::SystemTime::now() + std::time::Duration::from_secs(3_600)),
+            },
+            ..Default::default()
+        },
+    )]);
+    let ready = DataContext::from_usage_with_runtime(Some(&with_reset), &canvas, ThemeRuntime::default());
+    assert_eq!(
+        format_template("{claude.session:usage_line}", &ready),
+        format!(
+            "25% · {}",
+            format_template("{claude.session:usage_reset}", &ready)
+        )
+    );
+    assert_ne!(format_template("{claude.session:usage_reset}", &ready), "");
+}
+
+#[test]
 fn built_in_classic_uses_149_geometry() {
     let theme = ThemeDocument::starter();
     assert_eq!(theme.id, CLASSIC_THEME_ID);
     assert_eq!(theme.name, "Classic v1");
     assert_eq!(theme.validate(), Vec::<String>::new());
     for (runtime, expected_width) in [
-        (ThemeRuntime::new(true, false, false), 217),
-        (ThemeRuntime::new(true, true, false), 285),
-        (ThemeRuntime::new(true, true, true), 375),
+        (ThemeRuntime::new(true, false, false), 166),
+        (ThemeRuntime::new(true, true, false), 326),
+        (ThemeRuntime::new(true, true, true), 486),
     ] {
         assert_eq!(
             resolve_surface_size(&theme, 0, None, runtime),
@@ -373,8 +430,23 @@ fn starter_theme_round_trips_and_validates() {
     // the weekly row of the two providers that report credits alongside a
     // session/weekly window (OpenRouter and OpenCode Zen have no such window
     // of their own, so their two rows each count as an ordinary provider
-    // rather than an extra overlay).
-    assert_eq!(segments, vec![10; 7 * 2 * 2 + 2 * 2]);
+    // rather than an extra overlay). Every provider fixes its two bars at 5
+    // and 7 segments (one per hour/day) instead of scaling with the
+    // enabled-provider count; only the dollar-based credit overlay keeps 10
+    // segments for finer granularity.
+    assert_eq!(
+        segments,
+        vec![
+            5, 5, 7, 7, // cursor session/weekly, dark/light
+            5, 5, 7, 7, // claude session/weekly, dark/light
+            5, 5, 7, 7, // codex session/weekly, dark/light
+            5, 5, 7, 7, // antigravity session/weekly, dark/light
+            5, 5, 7, 7, // opencode session/weekly, dark/light
+            10, 10, 10, 10, // claude + codex credit overlays, dark/light
+            5, 5, 7, 7, // openrouter balance/total, dark/light
+            5, 5, 7, 7, // opencode zen spent/cap, dark/light
+        ]
+    );
     assert!(theme.surfaces[0]
         .children
         .iter()
@@ -559,15 +631,17 @@ fn opencode_monthly_window_is_available_to_templates_when_present() {
 fn starter_theme_renders_transparent_pixels_at_declared_size() {
     let theme = ThemeDocument::starter();
     let rendered = render_theme(&theme, None);
-    assert_eq!((rendered.width, rendered.height), (217, 46));
-    assert_eq!(rendered.pixels.len(), 217 * 46);
+    assert_eq!((rendered.width, rendered.height), (166, 46));
+    assert_eq!(rendered.pixels.len(), 166 * 46);
     assert!(rendered.pixels.iter().any(|pixel| pixel >> 24 > 0));
     assert_eq!(rendered.pixels[0] >> 24, 0);
-    let track_alpha = (30..139)
+    // The bar starts after the row offset (8) plus the percentage label (30);
+    // sample inside it, away from its edges (5 segments means 4 internal gaps).
+    let track_alpha = (40..115)
         .map(|x| rendered.pixels[10 * rendered.width as usize + x] >> 24)
         .collect::<Vec<_>>();
-    assert!(track_alpha.iter().filter(|alpha| **alpha == 0).count() >= 9);
-    assert!(track_alpha.iter().filter(|alpha| **alpha > 0).count() >= 70);
+    assert!(track_alpha.iter().filter(|alpha| **alpha == 0).count() >= 3);
+    assert!(track_alpha.iter().filter(|alpha| **alpha > 0).count() >= 60);
     assert!(rendered.warnings.is_empty());
 }
 
@@ -601,10 +675,10 @@ fn theme_surfaces_rasterize_at_requested_dpi_scales() {
     let theme = ThemeDocument::starter();
     let runtime = ThemeRuntime::new(true, false, false);
     for (scale, width, height) in [
-        (1.0, 217, 46),
-        (1.25, 271, 58),
-        (1.5, 326, 69),
-        (2.0, 434, 92),
+        (1.0, 166, 46),
+        (1.25, 208, 58),
+        (1.5, 249, 69),
+        (2.0, 332, 92),
     ] {
         let rendered = render_theme_surface_with_runtime_at_scale(&theme, 0, None, runtime, scale);
         assert_eq!((rendered.width, rendered.height), (width, height));
@@ -669,7 +743,7 @@ fn invalid_render_scales_fall_back_to_one() {
             ThemeRuntime::default(),
             scale,
         );
-        assert_eq!((rendered.width, rendered.height), (217, 46));
+        assert_eq!((rendered.width, rendered.height), (166, 46));
     }
 }
 
@@ -836,13 +910,13 @@ fn render_collapses_layout_while_zero_visibility_keeps_space() {
     theme.surfaces[0].children[claude].visibility = 0.0.into();
     assert_eq!(
         resolve_object_bounds_with_runtime(&theme, 0, codex, None, runtime).map(|bounds| bounds.0),
-        Some(164.0)
+        Some(168.0)
     );
 
     theme.surfaces[0].children[claude].render = 0.0.into();
     assert_eq!(
         resolve_object_bounds_with_runtime(&theme, 0, codex, None, runtime).map(|bounds| bounds.0),
-        Some(41.0)
+        Some(8.0)
     );
 }
 
@@ -911,26 +985,26 @@ fn starter_adapts_width_segments_and_collapsed_provider_rows() {
             .unwrap()
     };
     for (runtime, width, segments) in [
-        (ThemeRuntime::new(true, false, false), 217, 10),
-        (ThemeRuntime::new(false, true, false), 217, 10),
-        (ThemeRuntime::new(false, false, true), 217, 10),
-        (ThemeRuntime::new(true, true, false), 285, 5),
-        (ThemeRuntime::new(true, false, true), 285, 5),
-        (ThemeRuntime::new(false, true, true), 285, 5),
-        (ThemeRuntime::new(true, true, true), 375, 4),
+        (ThemeRuntime::new(true, false, false), 166, 10),
+        (ThemeRuntime::new(false, true, false), 166, 10),
+        (ThemeRuntime::new(false, false, true), 166, 10),
+        (ThemeRuntime::new(true, true, false), 326, 5),
+        (ThemeRuntime::new(true, false, true), 326, 5),
+        (ThemeRuntime::new(false, true, true), 326, 5),
+        (ThemeRuntime::new(true, true, true), 486, 4),
         (
             ThemeRuntime::from_providers(ProviderSet::from_enabled([ProviderId::OpenCode])),
-            245,
+            182,
             10,
         ),
         (
             ThemeRuntime::from_providers(ProviderSet::from_enabled([ProviderId::Cursor])),
-            245,
+            182,
             10,
         ),
         (
             ThemeRuntime::from_providers(ProviderSet::from_enabled(ProviderId::ALL)),
-            725,
+            1134,
             2,
         ),
     ] {
@@ -957,7 +1031,7 @@ fn starter_adapts_width_segments_and_collapsed_provider_rows() {
     assert_eq!(
         resolve_object_bounds_with_runtime(&theme, 0, index("codex-provider"), None, codex_only,)
             .map(|bounds| bounds.0),
-        Some(41.0)
+        Some(8.0)
     );
     assert!(resolve_object_bounds_with_runtime(
         &theme,
@@ -978,7 +1052,7 @@ fn starter_adapts_width_segments_and_collapsed_provider_rows() {
             claude_and_antigravity,
         )
         .map(|bounds| bounds.0),
-        Some(164.0)
+        Some(168.0)
     );
 }
 
@@ -1614,3 +1688,4 @@ fn credit_badges_abbreviate_a_balance_too_wide_for_the_tray() {
         "1.2k"
     );
 }
+

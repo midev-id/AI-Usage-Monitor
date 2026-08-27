@@ -364,6 +364,22 @@ pub(super) fn format_usage_badge(base: &str, context: &DataContext) -> Option<St
     )
 }
 
+/// The reset countdown half of [`format_usage_line`], for layouts that show
+/// the percentage and the remaining time as separate elements. Empty when
+/// the window has no reset to count down to; still surfaces the loading/error
+/// placeholders so a split layout degrades the same way the combined one does.
+pub(super) fn format_usage_reset(base: &str, context: &DataContext) -> Option<String> {
+    let line = format_usage_line(base, context)?;
+    if line == "--" || line == "!" {
+        return Some(line);
+    }
+    Some(
+        line.split_once(" · ")
+            .map(|(_, duration)| duration.to_string())
+            .unwrap_or_default(),
+    )
+}
+
 pub(super) fn localized<'a>(context: &'a DataContext, name: &str, fallback: &'a str) -> &'a str {
     context.get_string(name).unwrap_or(fallback)
 }

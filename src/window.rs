@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock};
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use windows::core::PCWSTR;
 use windows::Win32::Foundation::*;
@@ -11,11 +11,10 @@ use windows::Win32::Graphics::Gdi::*;
 use windows::Win32::System::LibraryLoader::{GetModuleFileNameW, GetModuleHandleW};
 use windows::Win32::System::Registry::*;
 use windows::Win32::System::Threading::{CreateMutexW, WaitForSingleObject};
-use windows::Win32::UI::Accessibility::HWINEVENTHOOK;
 use windows::Win32::UI::Controls::WM_MOUSELEAVE;
 use windows::Win32::UI::HiDpi::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    GetDoubleClickTime, ReleaseCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT,
+    GetDoubleClickTime, ReleaseCapture, SetCapture, TrackMouseEvent, TME_LEAVE, TRACKMOUSEEVENT,
 };
 use windows::Win32::UI::Shell::ShellExecuteW;
 use windows::Win32::UI::WindowsAndMessaging::*;
@@ -62,30 +61,10 @@ impl SendHwnd {
     }
 }
 
-/// Copyable event-hook value whose lifetime remains owned by the UI controller.
-#[derive(Clone, Copy)]
-struct SendWinEventHook(isize);
-
-// SAFETY: the hook is only stored or passed to UnhookWinEvent. Callback work is
-// marshalled through Win32; Rust data is never dereferenced through this value.
-unsafe impl Send for SendWinEventHook {}
-
-impl SendWinEventHook {
-    fn from_hook(hook: HWINEVENTHOOK) -> Self {
-        Self(hook.0 as isize)
-    }
-
-    fn to_hook(self) -> HWINEVENTHOOK {
-        HWINEVENTHOOK(self.0 as *mut _)
-    }
-}
-
 /// Shared application state
 struct AppState {
     hwnd: SendHwnd,
     taskbar_hwnd: Option<SendHwnd>,
-    tray_notify_hwnd: Option<SendHwnd>,
-    win_event_hook: Option<SendWinEventHook>,
     is_dark: bool,
     embedded: bool,
     language_override: Option<LanguageId>,
@@ -108,10 +87,13 @@ struct AppState {
 
     taskbar_index: usize,
     tray_offset: i32,
+    mouse_button_down: bool,
     dragging: bool,
     drag_start_mouse_x: i32,
     drag_start_client_x: i32,
     drag_start_offset: i32,
+    drag_max_offset: i32,
+    drag_reposition_pending: bool,
 
     custom_theme_enabled: bool,
     active_theme_path: Option<PathBuf>,
@@ -140,6 +122,7 @@ enum UpdateStatus {
 }
 
 const RETRY_BASE_MS: u32 = 30_000; // 30 seconds
+const WM_APP_DRAG_REPOSITION: u32 = WM_APP + 3;
 
 // Menu item IDs for update frequency
 const IDM_FREQ_1MIN: u16 = 10;
@@ -154,7 +137,6 @@ const IDM_DASHBOARD: u16 = 71;
 
 const WM_DPICHANGED_MSG: u32 = 0x02E0;
 const WM_APP_UPDATE_CHECK_COMPLETE: u32 = WM_APP + 2;
-const TRAY_ICON_UPDATE_REPOSITION_SUPPRESS_MS: u64 = 750;
 const WINDOW_STATE_INTERVAL_MS: u32 = 250;
 
 fn language_menu_command_id(language: LanguageId) -> u16 {
@@ -172,8 +154,6 @@ fn language_from_menu_command_id(command: u16) -> Option<LanguageId> {
 /// How often the watchdog thread polls for an explorer.exe restart (which
 /// recreates the taskbar and wipes our tray-icon registration).
 const TASKBAR_WATCH_INTERVAL_SECS: u64 = 2;
-
-static SUPPRESS_TRAY_REPOSITION_UNTIL: Mutex<Option<Instant>> = Mutex::new(None);
 
 /// Current system DPI (96 = 100% scaling, 144 = 150%, 192 = 200%, etc.)
 static CURRENT_DPI: AtomicU32 = AtomicU32::new(96);
@@ -622,75 +602,6 @@ fn taskbar_created_message() -> u32 {
     })
 }
 
-fn attach_to_taskbar(hwnd: HWND, requested_index: usize) -> bool {
-    let taskbars = native_interop::find_taskbars();
-    if taskbars.is_empty() {
-        diagnose::log("taskbar not found; using fallback popup window");
-        return false;
-    }
-
-    let index = requested_index.min(taskbars.len().saturating_sub(1));
-    let taskbar = taskbars[index];
-    diagnose::log(format!(
-        "taskbar selected index={index} count={} hwnd={:?} rect=({}, {}, {}, {})",
-        taskbars.len(),
-        taskbar.hwnd,
-        taskbar.rect.left,
-        taskbar.rect.top,
-        taskbar.rect.right,
-        taskbar.rect.bottom
-    ));
-
-    let old_hook = {
-        let mut state = lock_state();
-        state.as_mut().and_then(|s| s.win_event_hook.take())
-    };
-    if let Some(hook) = old_hook {
-        native_interop::unhook_win_event(hook.to_hook());
-    }
-
-    native_interop::embed_in_taskbar(hwnd, taskbar.hwnd);
-
-    let tray_notify = native_interop::find_child_window(taskbar.hwnd, "TrayNotifyWnd");
-    if tray_notify.is_some() {
-        diagnose::log("TrayNotifyWnd found");
-    } else {
-        diagnose::log("TrayNotifyWnd not found");
-    }
-
-    let hook = tray_notify.and_then(|tray_hwnd| {
-        let thread_id = native_interop::get_window_thread_id(tray_hwnd);
-        native_interop::set_tray_event_hook(thread_id, on_tray_location_changed)
-    });
-    if hook.is_some() {
-        diagnose::log("tray event hook installed");
-    } else {
-        diagnose::log("tray event hook could not be installed");
-    }
-
-    let mut state = lock_state();
-    if let Some(s) = state.as_mut() {
-        s.taskbar_hwnd = Some(SendHwnd::from_hwnd(taskbar.hwnd));
-        s.tray_notify_hwnd = tray_notify.map(SendHwnd::from_hwnd);
-        s.win_event_hook = hook.map(SendWinEventHook::from_hook);
-        s.taskbar_index = index;
-        s.embedded = true;
-    }
-    true
-}
-
-fn taskbar_at_point(pt: POINT) -> Option<(usize, native_interop::TaskbarWindow)> {
-    native_interop::find_taskbars()
-        .into_iter()
-        .enumerate()
-        .find(|(_, taskbar)| {
-            pt.x >= taskbar.rect.left
-                && pt.x < taskbar.rect.right
-                && pt.y >= taskbar.rect.top
-                && pt.y < taskbar.rect.bottom
-        })
-}
-
 fn tray_left_for_taskbar(taskbar_hwnd: HWND, taskbar_rect: RECT) -> i32 {
     let mut tray_left = taskbar_rect.right;
     if let Some(tray_hwnd) = native_interop::find_child_window(taskbar_hwnd, "TrayNotifyWnd") {
@@ -701,22 +612,13 @@ fn tray_left_for_taskbar(taskbar_hwnd: HWND, taskbar_rect: RECT) -> i32 {
     tray_left
 }
 
-fn clamp_offset_for_taskbar(taskbar_hwnd: HWND, taskbar_rect: RECT, offset: i32) -> i32 {
-    let tray_left = tray_left_for_taskbar(taskbar_hwnd, taskbar_rect);
-    let max_offset = (tray_left - taskbar_rect.left - total_widget_width()).max(0);
-    offset.clamp(0, max_offset)
-}
-
-fn offset_for_drop_point(
-    taskbar_hwnd: HWND,
-    taskbar_rect: RECT,
-    pt: POINT,
-    drag_start_client_x: i32,
+fn drag_offset_for_cursor(
+    start_offset: i32,
+    start_cursor_x: i32,
+    cursor_x: i32,
+    max_offset: i32,
 ) -> i32 {
-    let tray_left = tray_left_for_taskbar(taskbar_hwnd, taskbar_rect);
-    let desired_left = pt.x - taskbar_rect.left - drag_start_client_x;
-    let offset = tray_left - taskbar_rect.left - total_widget_width() - desired_left;
-    clamp_offset_for_taskbar(taskbar_hwnd, taskbar_rect, offset)
+    (start_offset + start_cursor_x - cursor_x).clamp(0, max_offset)
 }
 
 fn now_unix_secs() -> u64 {
@@ -1125,7 +1027,7 @@ fn apply_custom_theme(
             .and_then(|state| state.active_theme.clone()),
     };
     let loaded = loaded.unwrap_or_else(ThemeDocument::starter);
-    let old_hook = {
+    {
         let mut state = lock_state();
         let Some(state) = state.as_mut() else {
             return Err("Application is not ready".into());
@@ -1140,10 +1042,6 @@ fn apply_custom_theme(
             state.active_theme_path = path;
         }
         state.embedded = false;
-        state.win_event_hook.take()
-    };
-    if let Some(hook) = old_hook {
-        native_interop::unhook_win_event(hook.to_hook());
     }
     unsafe {
         native_interop::make_popup(hwnd, false);
@@ -1527,7 +1425,16 @@ pub fn run() {
         let mut configured_theme_path = settings.active_theme_path.as_deref().map(PathBuf::from);
         let mut configured_theme = configured_theme_path
             .as_deref()
-            .and_then(|path| theme_engine::load_theme(path).ok())
+            .and_then(|path| match theme_engine::load_theme(path) {
+                Ok(theme) => Some(theme),
+                Err(error) => {
+                    diagnose::log(format!(
+                        "failed to load active theme {}: {error}",
+                        path.display()
+                    ));
+                    None
+                }
+            })
             .filter(|theme| !theme.is_obsolete_studio_starter());
         let legacy_placement = settings.legacy_placement();
         let legacy_visibility = settings.legacy_widget_visibility();
@@ -1660,8 +1567,6 @@ pub fn run() {
             *state = Some(AppState {
                 hwnd: SendHwnd::from_hwnd(hwnd),
                 taskbar_hwnd: None,
-                tray_notify_hwnd: None,
-                win_event_hook: None,
                 is_dark,
                 embedded: false,
                 language_override,
@@ -1682,10 +1587,13 @@ pub fn run() {
                 last_update_check_unix: settings.last_update_check_unix,
                 taskbar_index: settings.taskbar_index,
                 tray_offset: settings.tray_offset,
+                mouse_button_down: false,
                 dragging: false,
                 drag_start_mouse_x: 0,
                 drag_start_client_x: 0,
                 drag_start_offset: 0,
+                drag_max_offset: 0,
+                drag_reposition_pending: false,
                 custom_theme_enabled,
                 active_theme_path,
                 active_theme,
@@ -2187,29 +2095,6 @@ fn reload_external_settings(hwnd: HWND) {
     position_at_taskbar();
     render_layered();
     warn_if_main_surface_hidden(hwnd);
-}
-
-fn suppress_tray_reposition_for(duration: Duration) {
-    let mut until = SUPPRESS_TRAY_REPOSITION_UNTIL
-        .lock()
-        .unwrap_or_else(|e| e.into_inner());
-    *until = Some(Instant::now() + duration);
-}
-
-fn tray_reposition_is_suppressed() -> bool {
-    let now = Instant::now();
-    let mut until = SUPPRESS_TRAY_REPOSITION_UNTIL
-        .lock()
-        .unwrap_or_else(|e| e.into_inner());
-
-    match *until {
-        Some(deadline) if now < deadline => true,
-        Some(_) => {
-            *until = None;
-            false
-        }
-        None => false,
-    }
 }
 
 mod message_loop;

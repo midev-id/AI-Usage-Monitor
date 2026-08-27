@@ -115,9 +115,6 @@ pub(super) unsafe extern "system" fn wnd_proc(
             check_language_change();
             render_layered();
             schedule_countdown_timer();
-            suppress_tray_reposition_for(Duration::from_millis(
-                TRAY_ICON_UPDATE_REPOSITION_SUPPRESS_MS,
-            ));
             sync_tray_icon(hwnd);
             LRESULT(0)
         }
@@ -141,102 +138,81 @@ pub(super) unsafe extern "system" fn wnd_proc(
             schedule_auto_update_check(hwnd);
             LRESULT(0)
         }
+        WM_APP_DRAG_REPOSITION => {
+            if let Some(state) = lock_state().as_mut() {
+                state.drag_reposition_pending = false;
+            }
+            position_at_taskbar();
+            LRESULT(0)
+        }
         WM_SETCURSOR if set_surface_cursor(hwnd) => LRESULT(1),
         WM_SETCURSOR => DefWindowProcW(hwnd, msg, wparam, lparam),
-        WM_MOUSEMOVE => {
-            let is_dragging = {
-                let state = lock_state();
-                state.as_ref().map(|s| s.dragging).unwrap_or(false)
+        WM_LBUTTONDOWN => {
+            let mut pt = POINT::default();
+            let _ = GetCursorPos(&mut pt);
+            let mut widget_rect = RECT::default();
+            let _ = GetWindowRect(hwnd, &mut widget_rect);
+            let widget_width = widget_rect.right - widget_rect.left;
+            // The widget is embedded as a child of the taskbar it's docked on
+            // (see position_custom_theme_internal), so its parent HWND is the
+            // authoritative taskbar handle. `state.taskbar_hwnd` is only set by
+            // the legacy cross-taskbar drop path and is otherwise never
+            // populated, so it can't be relied on here.
+            let taskbar_hwnd = GetParent(hwnd).ok().filter(|h| !h.is_invalid());
+            let previous_offset = match lock_state().as_ref() {
+                Some(s) => s.tray_offset,
+                None => return LRESULT(0),
             };
-            if is_dragging {
-                let mut pt = POINT::default();
-                let _ = GetCursorPos(&mut pt);
-                let move_target = {
-                    let mut state = lock_state();
-                    let s = match state.as_mut() {
-                        Some(s) => s,
-                        None => return LRESULT(0),
-                    };
-
-                    // Moving mouse left = positive delta = larger offset (further left)
-                    let delta = s.drag_start_mouse_x - pt.x;
-                    let mut new_offset = s.drag_start_offset + delta;
-
-                    // Clamp: offset >= 0 (can't go right of default)
-                    if new_offset < 0 {
-                        new_offset = 0;
-                    }
-
-                    let taskbar_hwnd = s.taskbar_hwnd.map(SendHwnd::to_hwnd);
-                    let embedded = s.embedded;
-                    let hwnd_val = s.hwnd.to_hwnd();
-
-                    // Clamp: don't go past left edge of taskbar
-                    if let Some(taskbar_hwnd) = taskbar_hwnd {
-                        if let Some(taskbar_rect) = native_interop::get_taskbar_rect(taskbar_hwnd) {
-                            let mut tray_left = taskbar_rect.right;
-                            if let Some(tray_hwnd) =
-                                native_interop::find_child_window(taskbar_hwnd, "TrayNotifyWnd")
-                            {
-                                if let Some(tray_rect) =
-                                    native_interop::get_window_rect_safe(tray_hwnd)
-                                {
-                                    tray_left = tray_rect.left;
-                                }
-                            }
-                            let widget_width = total_widget_width_for_state(s);
-                            let max_offset = (tray_left - taskbar_rect.left - widget_width).max(0);
-                            if new_offset > max_offset {
-                                new_offset = max_offset;
-                            }
-
-                            s.tray_offset = new_offset;
-
-                            let taskbar_height = taskbar_rect.bottom - taskbar_rect.top;
-                            let anchor_top = taskbar_rect.top;
-                            let anchor_height = taskbar_height;
-                            let widget_height = total_widget_height_for_state(s);
-                            let y = compute_anchor_y(anchor_top, anchor_height, widget_height);
-                            let x = if embedded {
-                                tray_left - taskbar_rect.left - widget_width - new_offset
-                            } else {
-                                tray_left - widget_width - new_offset
-                            };
-                            Some((
-                                hwnd_val,
-                                embedded,
-                                x,
-                                y,
-                                taskbar_rect.top,
-                                widget_width,
-                                widget_height,
-                            ))
-                        } else {
-                            s.tray_offset = new_offset;
-                            None
-                        }
-                    } else {
-                        s.tray_offset = new_offset;
-                        None
-                    }
-                };
-
-                if let Some((hwnd_val, embedded, x, y, taskbar_top, widget_width, widget_height)) =
-                    move_target
-                {
-                    if embedded {
-                        native_interop::move_window(
-                            hwnd_val,
-                            x,
-                            y - taskbar_top,
-                            widget_width,
-                            widget_height,
-                        );
-                    } else {
-                        native_interop::move_window(hwnd_val, x, y, widget_width, widget_height);
-                    }
+            let (taskbar_left, max_offset) = taskbar_hwnd
+                .and_then(|taskbar| {
+                    native_interop::get_taskbar_rect(taskbar).map(|rect| {
+                        let tray_left = tray_left_for_taskbar(taskbar, rect);
+                        (rect.left, (tray_left - rect.left - widget_width).max(0))
+                    })
+                })
+                .unwrap_or((pt.x, previous_offset.max(0)));
+            if let Some(s) = lock_state().as_mut() {
+                s.mouse_button_down = true;
+                s.dragging = false;
+                s.drag_start_mouse_x = pt.x;
+                s.drag_start_client_x = pt.x - taskbar_left;
+                s.drag_start_offset = previous_offset.clamp(0, max_offset);
+                s.drag_max_offset = max_offset;
+                s.drag_reposition_pending = false;
+            }
+            SetCapture(hwnd);
+            LRESULT(0)
+        }
+        WM_MOUSEMOVE => {
+            let mut pt = POINT::default();
+            let _ = GetCursorPos(&mut pt);
+            let threshold = GetSystemMetrics(SM_CXDRAG).max(2);
+            let should_post = lock_state().as_mut().is_some_and(|s| {
+                if !s.mouse_button_down {
+                    return false;
                 }
-            } else {
+                if !s.dragging {
+                    s.dragging = (pt.x - s.drag_start_mouse_x).abs() >= threshold;
+                }
+                if !s.dragging {
+                    return false;
+                }
+                s.tray_offset = drag_offset_for_cursor(
+                    s.drag_start_offset,
+                    s.drag_start_mouse_x,
+                    pt.x,
+                    s.drag_max_offset,
+                );
+                if s.drag_reposition_pending {
+                    false
+                } else {
+                    s.drag_reposition_pending = true;
+                    true
+                }
+            });
+            if should_post {
+                let _ = PostMessageW(hwnd, WM_APP_DRAG_REPOSITION, WPARAM(0), LPARAM(0));
+            } else if !lock_state().as_ref().is_some_and(|s| s.dragging) {
                 update_mouse_hover(hwnd, lparam);
             }
             LRESULT(0)
@@ -258,57 +234,38 @@ pub(super) unsafe extern "system" fn wnd_proc(
             LRESULT(0)
         }
         WM_LBUTTONUP => {
-            let suppressed = {
+            let (suppressed, was_dragging) = {
                 let mut state = lock_state();
-                state.as_mut().is_some_and(|state| {
+                state.as_mut().map_or((false, false), |state| {
                     let suppressed = state.suppress_next_left_up;
                     state.suppress_next_left_up = false;
-                    suppressed
+                    let was_dragging = state.dragging;
+                    state.mouse_button_down = false;
+                    state.dragging = false;
+                    state.drag_reposition_pending = false;
+                    (suppressed, was_dragging)
                 })
             };
+            let _ = ReleaseCapture();
             if suppressed {
                 return LRESULT(0);
             }
-            let mut pt = POINT::default();
-            let _ = GetCursorPos(&mut pt);
-            let drag_result = {
-                let mut state = lock_state();
-                if let Some(s) = state.as_mut() {
-                    if s.dragging {
-                        s.dragging = false;
-                        Some((s.taskbar_index, s.drag_start_client_x))
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            };
-            if let Some((current_taskbar_index, drag_start_client_x)) = drag_result {
-                let _ = ReleaseCapture();
-                if let Some((target_index, target_taskbar)) = taskbar_at_point(pt) {
-                    if target_index != current_taskbar_index {
-                        let new_offset = offset_for_drop_point(
-                            target_taskbar.hwnd,
-                            target_taskbar.rect,
-                            pt,
-                            drag_start_client_x,
-                        );
-                        {
-                            let mut state = lock_state();
-                            if let Some(s) = state.as_mut() {
-                                s.tray_offset = new_offset;
-                            }
-                        }
-                        if attach_to_taskbar(hwnd, target_index) {
-                            position_at_taskbar();
-                            render_layered();
-                        }
-                    }
-                }
+            // The theme's taskbar surface always renders on its authored
+            // display (see position_custom_theme_internal), so dragging is
+            // bounded to the taskbar it started on rather than handed off to
+            // a different monitor's taskbar.
+            if was_dragging {
                 save_state_settings();
             } else if let Some((surface, object)) = mouse_target_at(hwnd, lparam) {
                 schedule_or_dispatch_click(hwnd, surface, object);
+            }
+            LRESULT(0)
+        }
+        WM_CAPTURECHANGED | WM_CANCELMODE => {
+            if let Some(state) = lock_state().as_mut() {
+                state.mouse_button_down = false;
+                state.dragging = false;
+                state.drag_reposition_pending = false;
             }
             LRESULT(0)
         }
@@ -361,13 +318,6 @@ pub(super) unsafe extern "system" fn wnd_proc(
                     }
                 }
                 2 => {
-                    let hook = {
-                        let state = lock_state();
-                        state.as_ref().and_then(|s| s.win_event_hook)
-                    };
-                    if let Some(h) = hook {
-                        native_interop::unhook_win_event(h.to_hook());
-                    }
                     crate::dashboard::close_existing();
                     let _ = DestroyWindow(hwnd);
                 }
@@ -513,19 +463,13 @@ pub(super) unsafe extern "system" fn wnd_proc(
         WM_DESTROY => {
             crate::dashboard::close_existing();
             crate::desktop_compositor::clear();
-            let (hook, desktop_windows) = {
+            let desktop_windows = {
                 let mut state = lock_state();
                 match state.as_mut() {
-                    Some(state) => (
-                        state.win_event_hook,
-                        std::mem::take(&mut state.desktop_hwnds),
-                    ),
-                    None => (None, Vec::new()),
+                    Some(state) => std::mem::take(&mut state.desktop_hwnds),
+                    None => Vec::new(),
                 }
             };
-            if let Some(h) = hook {
-                native_interop::unhook_win_event(h.to_hook());
-            }
             for window in desktop_windows.into_iter().flatten() {
                 let _ = DestroyWindow(window.to_hwnd());
             }

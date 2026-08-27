@@ -33,11 +33,6 @@ pub(super) fn position_at_taskbar() {
             None => return,
         };
 
-        // Don't fight the user's drag
-        if s.dragging {
-            return;
-        }
-
         let taskbar_hwnd = match s.taskbar_hwnd {
             Some(h) => h.to_hwnd(),
             None => {
@@ -254,7 +249,7 @@ pub(super) fn position_custom_theme_internal(hwnd: HWND, theme: &ThemeDocument, 
         .placement
         .surface_vertical
         .unwrap_or(theme.placement.vertical);
-    let x = aligned_origin(
+    let mut x = aligned_origin(
         reference.left,
         reference_width,
         width,
@@ -274,6 +269,12 @@ pub(super) fn position_custom_theme_internal(hwnd: HWND, theme: &ThemeDocument, 
         .placement
         .nest
         .resolve(theme.placement.reference.region);
+    if matches!(nest, SurfaceNest::Taskbar) {
+        let tray_offset = lock_state().as_ref().map(|s| s.tray_offset).unwrap_or(0);
+        // Cursor and taskbar coordinates are physical pixels, so the saved
+        // drag offset must not be DPI-scaled again.
+        x -= tray_offset;
+    }
     unsafe {
         match nest {
             SurfaceNest::Taskbar => {
@@ -502,48 +503,3 @@ pub(super) fn compute_anchor_y(anchor_top: i32, anchor_height: i32, widget_heigh
     (anchor_bottom - widget_height).max(anchor_top)
 }
 
-/// WinEvent callback for tray icon location changes
-pub(super) unsafe extern "system" fn on_tray_location_changed(
-    _hook: HWINEVENTHOOK,
-    _event: u32,
-    hwnd: HWND,
-    _id_object: i32,
-    _id_child: i32,
-    _thread: u32,
-    _time: u32,
-) {
-    static LAST_REPOSITION: Mutex<Option<std::time::Instant>> = Mutex::new(None);
-
-    let is_tray = {
-        let state = lock_state();
-        state
-            .as_ref()
-            .and_then(|s| s.tray_notify_hwnd)
-            .map(|h| h.to_hwnd() == hwnd)
-            .unwrap_or(false)
-    };
-
-    if is_tray {
-        if tray_reposition_is_suppressed() {
-            return;
-        }
-
-        let should_reposition = {
-            let mut last = LAST_REPOSITION.lock().unwrap_or_else(|e| e.into_inner());
-            let now = std::time::Instant::now();
-            if last
-                .map(|t| now.duration_since(t).as_millis() > 500)
-                .unwrap_or(true)
-            {
-                *last = Some(now);
-                true
-            } else {
-                false
-            }
-        };
-        if should_reposition {
-            position_at_taskbar();
-            render_layered();
-        }
-    }
-}

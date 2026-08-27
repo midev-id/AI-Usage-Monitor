@@ -55,6 +55,13 @@ fn legacy_physical_offset_becomes_a_leftward_logical_theme_offset() {
 }
 
 #[test]
+fn drag_offset_uses_physical_cursor_pixels_and_stays_in_bounds() {
+    assert_eq!(drag_offset_for_cursor(20, 500, 540, 200), 0);
+    assert_eq!(drag_offset_for_cursor(20, 500, 400, 200), 120);
+    assert_eq!(drag_offset_for_cursor(20, 500, 100, 200), 200);
+}
+
+#[test]
 fn tray_widget_action_targets_a_custom_theme_root_without_a_main_id() {
     let mut theme = ThemeDocument::starter();
     theme.surfaces[0].id = "layer-62744-2".into();

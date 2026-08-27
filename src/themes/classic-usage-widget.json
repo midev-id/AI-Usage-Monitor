@@ -19,7 +19,7 @@
         "offset_x": 0,
         "offset_y": 0
       },
-      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28",
+      "width": "9 + providers.count * (5 * 16 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + (providers.claude.enabled + providers.codex.enabled + providers.antigravity.enabled) * 12",
       "height": "46",
       "mouse_events": {
         "right_click": "show_context_menu(\"classic-v1\")"
@@ -84,99 +84,11 @@
           }
         },
         {
-          "id": "session-label-dark",
-          "name": "dark 5-hour label",
-          "render": "system.dark",
-          "x": "13",
-          "y": "5",
-          "width": "18",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.session_window}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#888888FF"
-            }
-          }
-        },
-        {
-          "id": "weekly-label-dark",
-          "name": "dark 7-day label",
-          "render": "system.dark * (1 - providers.opencode.enabled)",
-          "x": "13",
-          "y": "28",
-          "width": "18",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.weekly_window}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#888888FF"
-            }
-          }
-        },
-        {
-          "id": "session-label-light",
-          "name": "light 5-hour label",
-          "render": "1 - system.dark",
-          "x": "13",
-          "y": "5",
-          "width": "18",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.session_window}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#404040FF"
-            }
-          }
-        },
-        {
-          "id": "weekly-label-light",
-          "name": "light 7-day label",
-          "render": "(1 - system.dark) * (1 - providers.opencode.enabled)",
-          "x": "13",
-          "y": "28",
-          "width": "18",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{i18n.weekly_window}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#404040FF"
-            }
-          }
-        },
-        {
           "id": "cursor-provider",
           "name": "Cursor provider",
           "render": "providers.cursor.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 90",
+          "width": "5 * 16 - 1 + 4 + 90",
           "height": "46"
         },
         {
@@ -185,7 +97,7 @@
           "render": "system.dark",
           "parent": "cursor-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -198,8 +110,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -208,7 +120,7 @@
           "name": "dark Cursor Auto value",
           "render": "system.dark",
           "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "90",
           "height": "13",
@@ -232,7 +144,7 @@
           "render": "1 - system.dark",
           "parent": "cursor-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -245,8 +157,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -255,7 +167,7 @@
           "name": "light Cursor Auto value",
           "render": "1 - system.dark",
           "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "90",
           "height": "13",
@@ -279,7 +191,7 @@
           "render": "system.dark",
           "parent": "cursor-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -292,8 +204,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -302,7 +214,7 @@
           "name": "dark Cursor API value",
           "render": "system.dark",
           "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "90",
           "height": "13",
@@ -326,7 +238,7 @@
           "render": "1 - system.dark",
           "parent": "cursor-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -339,8 +251,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -349,7 +261,7 @@
           "name": "light Cursor API value",
           "render": "1 - system.dark",
           "parent": "cursor-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "90",
           "height": "13",
@@ -368,54 +280,10 @@
           }
         },
         {
-          "id": "opencode-long-label-dark",
-          "name": "dark OpenCode 7-day or 30-day label",
-          "render": "system.dark * providers.opencode.enabled",
-          "x": "8",
-          "y": "28",
-          "width": "30",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "7/30d",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#888888FF"
-            }
-          }
-        },
-        {
-          "id": "opencode-long-label-light",
-          "name": "light OpenCode 7-day or 30-day label",
-          "render": "(1 - system.dark) * providers.opencode.enabled",
-          "x": "8",
-          "y": "28",
-          "width": "30",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "7/30d",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#404040FF"
-            }
-          }
-        },
-        {
           "id": "provider-row",
           "name": "Enabled providers",
-          "x": "41",
-          "width": "canvas.width - 42",
+          "x": "8",
+          "width": "canvas.width - 9",
           "height": "46",
           "layout": "row",
           "gap": "3"
@@ -425,8 +293,31 @@
           "name": "Claude Code provider",
           "render": "providers.claude.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "width": "30 + 5 * 16 - 1 + 4 + 44",
           "height": "46"
+        },
+        {
+          "id": "claude-session-percent-dark",
+          "name": "dark Claude Code 5-hour percent",
+          "render": "system.dark",
+          "parent": "claude-provider",
+          "x": "0",
+          "y": "5",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{claude.session:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#F09A7AFF"
+            }
+          }
         },
         {
           "id": "claude-session-segments-dark",
@@ -434,7 +325,7 @@
           "render": "system.dark",
           "parent": "claude-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -447,23 +338,24 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "claude-session-value-dark",
           "name": "dark Claude Code 5-hour value",
           "render": "system.dark",
           "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.session:usage_line}",
+            "template": "{claude.session:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -476,12 +368,35 @@
           }
         },
         {
+          "id": "claude-session-percent-light",
+          "name": "light Claude Code 5-hour percent",
+          "render": "1 - system.dark",
+          "parent": "claude-provider",
+          "x": "0",
+          "y": "5",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{claude.session:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#A94F32FF"
+            }
+          }
+        },
+        {
           "id": "claude-session-segments-light",
           "name": "light Claude Code 5-hour segments",
           "render": "1 - system.dark",
           "parent": "claude-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -494,23 +409,24 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "claude-session-value-light",
           "name": "light Claude Code 5-hour value",
           "render": "1 - system.dark",
           "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.session:usage_line}",
+            "template": "{claude.session:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -523,12 +439,35 @@
           }
         },
         {
+          "id": "claude-weekly-percent-dark",
+          "name": "dark Claude Code 7-day percent",
+          "render": "(system.dark) && !claude.credits.available",
+          "parent": "claude-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{claude.weekly:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#F09A7AFF"
+            }
+          }
+        },
+        {
           "id": "claude-weekly-segments-dark",
           "name": "dark Claude Code 7-day segments",
           "render": "system.dark",
           "parent": "claude-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -541,23 +480,24 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "7",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "claude-weekly-value-dark",
           "name": "dark Claude Code 7-day value",
           "render": "(system.dark) && !claude.credits.available",
           "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.weekly:usage_line}",
+            "template": "{claude.weekly:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -570,12 +510,35 @@
           }
         },
         {
+          "id": "claude-weekly-percent-light",
+          "name": "light Claude Code 7-day percent",
+          "render": "(1 - system.dark) && !claude.credits.available",
+          "parent": "claude-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{claude.weekly:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#A94F32FF"
+            }
+          }
+        },
+        {
           "id": "claude-weekly-segments-light",
           "name": "light Claude Code 7-day segments",
           "render": "1 - system.dark",
           "parent": "claude-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -588,23 +551,24 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "7",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "claude-weekly-value-light",
           "name": "light Claude Code 7-day value",
           "render": "(1 - system.dark) && !claude.credits.available",
           "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.weekly:usage_line}",
+            "template": "{claude.weekly:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -621,8 +585,31 @@
           "name": "Codex provider",
           "render": "providers.codex.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "width": "30 + 5 * 16 - 1 + 4 + 44",
           "height": "46"
+        },
+        {
+          "id": "codex-session-percent-dark",
+          "name": "dark Codex 5-hour percent",
+          "render": "system.dark",
+          "parent": "codex-provider",
+          "x": "0",
+          "y": "5",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{codex.five_hour:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#F5F5F5FF"
+            }
+          }
         },
         {
           "id": "codex-session-segments-dark",
@@ -630,7 +617,7 @@
           "render": "system.dark",
           "parent": "codex-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -643,23 +630,24 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "codex-session-value-dark",
           "name": "dark Codex 5-hour value",
           "render": "system.dark",
           "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{codex.five_hour:usage_line}",
+            "template": "{codex.five_hour:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -668,6 +656,29 @@
             "align": "left",
             "color": {
               "color": "#F5F5F5FF"
+            }
+          }
+        },
+        {
+          "id": "codex-session-percent-light",
+          "name": "light Codex 5-hour percent",
+          "render": "1 - system.dark",
+          "parent": "codex-provider",
+          "x": "0",
+          "y": "5",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{codex.five_hour:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#1F1F1FFF"
             }
           }
         },
@@ -677,7 +688,7 @@
           "render": "1 - system.dark",
           "parent": "codex-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -690,23 +701,24 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "codex-session-value-light",
           "name": "light Codex 5-hour value",
           "render": "1 - system.dark",
           "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{codex.five_hour:usage_line}",
+            "template": "{codex.five_hour:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -719,12 +731,35 @@
           }
         },
         {
+          "id": "codex-weekly-percent-dark",
+          "name": "dark Codex 7-day percent",
+          "render": "(system.dark) && !codex.credits.available",
+          "parent": "codex-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{codex.weekly:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#F5F5F5FF"
+            }
+          }
+        },
+        {
           "id": "codex-weekly-segments-dark",
           "name": "dark Codex 7-day segments",
           "render": "system.dark",
           "parent": "codex-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -737,23 +772,24 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "7",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "codex-weekly-value-dark",
           "name": "dark Codex 7-day value",
           "render": "(system.dark) && !codex.credits.available",
           "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{codex.weekly:usage_line}",
+            "template": "{codex.weekly:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -766,12 +802,35 @@
           }
         },
         {
+          "id": "codex-weekly-percent-light",
+          "name": "light Codex 7-day percent",
+          "render": "(1 - system.dark) && !codex.credits.available",
+          "parent": "codex-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{codex.weekly:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#1F1F1FFF"
+            }
+          }
+        },
+        {
           "id": "codex-weekly-segments-light",
           "name": "light Codex 7-day segments",
           "render": "1 - system.dark",
           "parent": "codex-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -784,23 +843,24 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "7",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "codex-weekly-value-light",
           "name": "light Codex 7-day value",
           "render": "(1 - system.dark) && !codex.credits.available",
           "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{codex.weekly:usage_line}",
+            "template": "{codex.weekly:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -817,8 +877,31 @@
           "name": "Antigravity provider",
           "render": "providers.antigravity.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "width": "30 + 5 * 16 - 1 + 4 + 44",
           "height": "46"
+        },
+        {
+          "id": "antigravity-session-percent-dark",
+          "name": "dark Antigravity 5-hour percent",
+          "render": "system.dark",
+          "parent": "antigravity-provider",
+          "x": "0",
+          "y": "5",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{antigravity.session:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#8AB4F8FF"
+            }
+          }
         },
         {
           "id": "antigravity-session-segments-dark",
@@ -826,7 +909,7 @@
           "render": "system.dark",
           "parent": "antigravity-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -839,23 +922,24 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "antigravity-session-value-dark",
           "name": "dark Antigravity 5-hour value",
           "render": "system.dark",
           "parent": "antigravity-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{antigravity.session:usage_line}",
+            "template": "{antigravity.session:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -868,12 +952,35 @@
           }
         },
         {
+          "id": "antigravity-session-percent-light",
+          "name": "light Antigravity 5-hour percent",
+          "render": "1 - system.dark",
+          "parent": "antigravity-provider",
+          "x": "0",
+          "y": "5",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{antigravity.session:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#1967D2FF"
+            }
+          }
+        },
+        {
           "id": "antigravity-session-segments-light",
           "name": "light Antigravity 5-hour segments",
           "render": "1 - system.dark",
           "parent": "antigravity-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -886,23 +993,24 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "antigravity-session-value-light",
           "name": "light Antigravity 5-hour value",
           "render": "1 - system.dark",
           "parent": "antigravity-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{antigravity.session:usage_line}",
+            "template": "{antigravity.session:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -915,12 +1023,35 @@
           }
         },
         {
+          "id": "antigravity-weekly-percent-dark",
+          "name": "dark Antigravity 7-day percent",
+          "render": "system.dark",
+          "parent": "antigravity-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{antigravity.weekly:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#8AB4F8FF"
+            }
+          }
+        },
+        {
           "id": "antigravity-weekly-segments-dark",
           "name": "dark Antigravity 7-day segments",
           "render": "system.dark",
           "parent": "antigravity-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -933,23 +1064,24 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "7",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "antigravity-weekly-value-dark",
           "name": "dark Antigravity 7-day value",
           "render": "system.dark",
           "parent": "antigravity-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{antigravity.weekly:usage_line}",
+            "template": "{antigravity.weekly:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -962,12 +1094,35 @@
           }
         },
         {
+          "id": "antigravity-weekly-percent-light",
+          "name": "light Antigravity 7-day percent",
+          "render": "1 - system.dark",
+          "parent": "antigravity-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{antigravity.weekly:usage_badge}",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#1967D2FF"
+            }
+          }
+        },
+        {
           "id": "antigravity-weekly-segments-light",
           "name": "light Antigravity 7-day segments",
           "render": "1 - system.dark",
           "parent": "antigravity-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -980,23 +1135,24 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "7",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "antigravity-weekly-value-light",
           "name": "light Antigravity 7-day value",
           "render": "1 - system.dark",
           "parent": "antigravity-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{antigravity.weekly:usage_line}",
+            "template": "{antigravity.weekly:usage_reset}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1013,7 +1169,7 @@
           "name": "OpenCode provider",
           "render": "providers.opencode.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 90",
+          "width": "5 * 16 - 1 + 4 + 90",
           "height": "46"
         },
         {
@@ -1022,7 +1178,7 @@
           "render": "system.dark",
           "parent": "opencode-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1035,8 +1191,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1045,7 +1201,7 @@
           "name": "dark OpenCode 5-hour value",
           "render": "system.dark",
           "parent": "opencode-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "62",
           "height": "13",
@@ -1069,7 +1225,7 @@
           "render": "1 - system.dark",
           "parent": "opencode-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1082,8 +1238,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1092,7 +1248,7 @@
           "name": "light OpenCode 5-hour value",
           "render": "1 - system.dark",
           "parent": "opencode-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "62",
           "height": "13",
@@ -1116,7 +1272,7 @@
           "render": "system.dark",
           "parent": "opencode-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1129,8 +1285,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1139,7 +1295,7 @@
           "name": "dark OpenCode long-window value",
           "render": "system.dark",
           "parent": "opencode-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "90",
           "height": "13",
@@ -1163,7 +1319,7 @@
           "render": "1 - system.dark",
           "parent": "opencode-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1176,8 +1332,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1186,7 +1342,7 @@
           "name": "light OpenCode long-window value",
           "render": "1 - system.dark",
           "parent": "opencode-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "90",
           "height": "13",
@@ -1205,12 +1361,36 @@
           }
         },
         {
+          "id": "claude-credits-percent-dark",
+          "name": "dark claude credit percent",
+          "render": "(system.dark) && claude.credits.available",
+          "parent": "claude-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{claude.credits.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#F5A623FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
           "id": "claude-credits-segments-dark",
           "name": "dark claude credit overlay",
           "render": "(system.dark) && claude.credits.available",
           "parent": "claude-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1226,18 +1406,19 @@
             },
             "corner_radius": "2",
             "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "claude-credits-value-dark",
           "name": "dark claude credit balance",
           "render": "(system.dark) && claude.credits.available",
           "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
@@ -1250,6 +1431,30 @@
             "align": "left",
             "color": {
               "color": "#F5A623FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
+          "id": "claude-credits-percent-light",
+          "name": "light claude credit percent",
+          "render": "(1 - system.dark) && claude.credits.available",
+          "parent": "claude-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{claude.credits.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#C77700FF",
               "opacity": "1"
             }
           }
@@ -1260,7 +1465,7 @@
           "render": "(1 - system.dark) && claude.credits.available",
           "parent": "claude-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1276,18 +1481,19 @@
             },
             "corner_radius": "2",
             "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "claude-credits-value-light",
           "name": "light claude credit balance",
           "render": "(1 - system.dark) && claude.credits.available",
           "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
@@ -1305,12 +1511,36 @@
           }
         },
         {
+          "id": "codex-credits-percent-dark",
+          "name": "dark codex credit percent",
+          "render": "(system.dark) && codex.credits.available",
+          "parent": "codex-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{codex.credits.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#F5A623FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
           "id": "codex-credits-segments-dark",
           "name": "dark codex credit overlay",
           "render": "(system.dark) && codex.credits.available",
           "parent": "codex-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1326,18 +1556,19 @@
             },
             "corner_radius": "2",
             "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "codex-credits-value-dark",
           "name": "dark codex credit balance",
           "render": "(system.dark) && codex.credits.available",
           "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
@@ -1355,12 +1586,36 @@
           }
         },
         {
+          "id": "codex-credits-percent-light",
+          "name": "light codex credit percent",
+          "render": "(1 - system.dark) && codex.credits.available",
+          "parent": "codex-provider",
+          "x": "0",
+          "y": "28",
+          "width": "26",
+          "height": "13",
+          "content": {
+            "type": "text",
+            "template": "{codex.credits.percentage:0}%",
+            "font_family": "Segoe UI",
+            "font_size": "12",
+            "weight": "medium",
+            "rendering": "clear_type",
+            "contrast": "1",
+            "align": "right",
+            "color": {
+              "color": "#C77700FF",
+              "opacity": "1"
+            }
+          }
+        },
+        {
           "id": "codex-credits-segments-light",
           "name": "light codex credit overlay",
           "render": "(1 - system.dark) && codex.credits.available",
           "parent": "codex-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1376,18 +1631,19 @@
             },
             "corner_radius": "2",
             "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments_expression": "5",
             "segment_gap": "1"
-          }
+          },
+          "x": "30"
         },
         {
           "id": "codex-credits-value-light",
           "name": "light codex credit balance",
           "render": "(1 - system.dark) && codex.credits.available",
           "parent": "codex-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "30 + 5 * 16 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "44",
           "height": "13",
           "content": {
             "type": "text",
@@ -1409,7 +1665,7 @@
           "name": "OpenRouter provider",
           "render": "providers.openrouter.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "width": "5 * 16 - 1 + 4 + 62",
           "height": "46"
         },
         {
@@ -1418,7 +1674,7 @@
           "render": "system.dark",
           "parent": "openrouter-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1431,8 +1687,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1441,7 +1697,7 @@
           "name": "dark OpenRouter credit balance value",
           "render": "system.dark",
           "parent": "openrouter-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "62",
           "height": "13",
@@ -1465,7 +1721,7 @@
           "render": "1 - system.dark",
           "parent": "openrouter-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1478,8 +1734,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1488,7 +1744,7 @@
           "name": "light OpenRouter credit balance value",
           "render": "1 - system.dark",
           "parent": "openrouter-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "62",
           "height": "13",
@@ -1512,7 +1768,7 @@
           "render": "system.dark",
           "parent": "openrouter-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1525,8 +1781,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1535,7 +1791,7 @@
           "name": "dark OpenRouter credit total value",
           "render": "system.dark",
           "parent": "openrouter-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "62",
           "height": "13",
@@ -1559,7 +1815,7 @@
           "render": "1 - system.dark",
           "parent": "openrouter-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1572,8 +1828,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1582,7 +1838,7 @@
           "name": "light OpenRouter credit total value",
           "render": "1 - system.dark",
           "parent": "openrouter-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "62",
           "height": "13",
@@ -1605,7 +1861,7 @@
           "name": "OpenCode Zen provider",
           "render": "providers.opencode_zen.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "width": "5 * 16 - 1 + 4 + 62",
           "height": "46"
         },
         {
@@ -1614,7 +1870,7 @@
           "render": "system.dark",
           "parent": "opencode-zen-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1627,8 +1883,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1637,7 +1893,7 @@
           "name": "dark OpenCode Zen spend value",
           "render": "system.dark",
           "parent": "opencode-zen-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "62",
           "height": "13",
@@ -1661,7 +1917,7 @@
           "render": "1 - system.dark",
           "parent": "opencode-zen-provider",
           "y": "5",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1674,8 +1930,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 5,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1684,7 +1940,7 @@
           "name": "light OpenCode Zen spend value",
           "render": "1 - system.dark",
           "parent": "opencode-zen-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "5",
           "width": "62",
           "height": "13",
@@ -1708,7 +1964,7 @@
           "render": "system.dark",
           "parent": "opencode-zen-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1721,8 +1977,8 @@
               "color": "#444444FF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1731,7 +1987,7 @@
           "name": "dark OpenCode Zen cap value",
           "render": "system.dark",
           "parent": "opencode-zen-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "62",
           "height": "13",
@@ -1755,7 +2011,7 @@
           "render": "1 - system.dark",
           "parent": "opencode-zen-provider",
           "y": "28",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "width": "5 * 16 - 1",
           "height": "13",
           "content": {
             "type": "progress",
@@ -1768,8 +2024,8 @@
               "color": "#AAAAAAFF"
             },
             "corner_radius": "2",
-            "segments": 10,
-            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segments": 7,
+            "segments_expression": "5",
             "segment_gap": "1"
           }
         },
@@ -1778,7 +2034,7 @@
           "name": "light OpenCode Zen cap value",
           "render": "1 - system.dark",
           "parent": "opencode-zen-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
+          "x": "5 * 16 - 1 + 4",
           "y": "28",
           "width": "62",
           "height": "13",
@@ -2022,7 +2278,7 @@
     {
       "id": "codex-tray-icon",
       "name": "Codex usage",
-      "render": "providers.codex.enabled",
+      "render": "providers.codex.enabled * (1 - providers.claude.enabled)",
       "mouse_events": {
         "click": "toggle(\"main\", render)",
         "double_click": "toggle(\"main\", render)",
@@ -2266,7 +2522,7 @@
     {
       "id": "antigravity-tray-icon",
       "name": "Antigravity usage",
-      "render": "providers.antigravity.enabled",
+      "render": "providers.antigravity.enabled * (1 - providers.claude.enabled) * (1 - providers.codex.enabled)",
       "mouse_events": {
         "click": "toggle(\"main\", render)",
         "double_click": "toggle(\"main\", render)",
@@ -2434,7 +2690,7 @@
     {
       "id": "cursor-tray-icon",
       "name": "Cursor usage",
-      "render": "providers.cursor.enabled",
+      "render": "providers.cursor.enabled * (1 - providers.claude.enabled) * (1 - providers.codex.enabled) * (1 - providers.antigravity.enabled)",
       "mouse_events": {
         "click": "toggle(\"main\", render)",
         "double_click": "toggle(\"main\", render)",
@@ -2602,7 +2858,7 @@
     {
       "id": "opencode-tray-icon",
       "name": "OpenCode usage",
-      "render": "providers.opencode.enabled",
+      "render": "providers.opencode.enabled * (1 - providers.claude.enabled) * (1 - providers.codex.enabled) * (1 - providers.antigravity.enabled) * (1 - providers.cursor.enabled)",
       "mouse_events": {
         "click": "toggle(\"main\", render)",
         "double_click": "toggle(\"main\", render)",
@@ -2770,7 +3026,7 @@
     {
       "id": "openrouter-tray-icon",
       "name": "OpenRouter usage",
-      "render": "providers.openrouter.enabled",
+      "render": "providers.openrouter.enabled * (1 - providers.claude.enabled) * (1 - providers.codex.enabled) * (1 - providers.antigravity.enabled) * (1 - providers.cursor.enabled) * (1 - providers.opencode.enabled)",
       "mouse_events": {
         "click": "toggle(\"main\", render)",
         "double_click": "toggle(\"main\", render)",
@@ -2938,7 +3194,7 @@
     {
       "id": "opencode-zen-tray-icon",
       "name": "OpenCode Zen usage",
-      "render": "providers.opencode_zen.enabled",
+      "render": "providers.opencode_zen.enabled * (1 - providers.claude.enabled) * (1 - providers.codex.enabled) * (1 - providers.antigravity.enabled) * (1 - providers.cursor.enabled) * (1 - providers.opencode.enabled) * (1 - providers.openrouter.enabled)",
       "mouse_events": {
         "click": "toggle(\"main\", render)",
         "double_click": "toggle(\"main\", render)",

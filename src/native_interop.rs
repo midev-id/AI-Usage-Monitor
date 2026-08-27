@@ -5,7 +5,6 @@ use windows::Win32::Foundation::{BOOL, HWND, LPARAM, RECT, WPARAM};
 use windows::Win32::Graphics::Gdi::{
     EnumDisplayMonitors, GetMonitorInfoW, HDC, HMONITOR, MONITORINFO,
 };
-use windows::Win32::UI::Accessibility::{SetWinEventHook, UnhookWinEvent, HWINEVENTHOOK};
 use windows::Win32::UI::Shell::{SHAppBarMessage, ABM_GETTASKBARPOS, APPBARDATA};
 use windows::Win32::UI::WindowsAndMessaging::*;
 
@@ -13,10 +12,6 @@ use windows::Win32::UI::WindowsAndMessaging::*;
 pub const WS_POPUP_STYLE: u32 = 0x80000000;
 pub const WS_CHILD_STYLE: u32 = 0x40000000;
 pub const WS_CLIPSIBLINGS_STYLE: u32 = 0x04000000;
-
-// Win event constants
-pub const EVENT_OBJECT_LOCATIONCHANGE: u32 = 0x800B;
-pub const WINEVENT_OUTOFCONTEXT: u32 = 0x0000;
 
 // Timer IDs
 pub const TIMER_POLL: usize = 1;
@@ -183,11 +178,6 @@ pub fn window_class_name(hwnd: HWND) -> Option<String> {
         let len = GetClassNameW(hwnd, &mut class_name);
         (len > 0).then(|| String::from_utf16_lossy(&class_name[..len as usize]))
     }
-}
-
-/// Embed our window as a child of the taskbar
-pub fn embed_in_taskbar(hwnd: HWND, taskbar_hwnd: HWND) {
-    embed_as_child(hwnd, taskbar_hwnd);
 }
 
 /// Host a layered surface inside a shell-owned window. Parenting makes the
@@ -366,41 +356,6 @@ pub fn find_desktop_host() -> Option<DesktopHost> {
 pub fn move_window(hwnd: HWND, x: i32, y: i32, w: i32, h: i32) {
     unsafe {
         let _ = MoveWindow(hwnd, x, y, w, h, true);
-    }
-}
-
-/// Set up a WinEvent hook for tray location changes
-pub fn set_tray_event_hook(
-    thread_id: u32,
-    callback: unsafe extern "system" fn(HWINEVENTHOOK, u32, HWND, i32, i32, u32, u32),
-) -> Option<HWINEVENTHOOK> {
-    unsafe {
-        let hook = SetWinEventHook(
-            EVENT_OBJECT_LOCATIONCHANGE,
-            EVENT_OBJECT_LOCATIONCHANGE,
-            None,
-            Some(callback),
-            0,
-            thread_id,
-            WINEVENT_OUTOFCONTEXT,
-        );
-        if hook.is_invalid() {
-            None
-        } else {
-            Some(hook)
-        }
-    }
-}
-
-/// Get the thread ID that owns a window
-pub fn get_window_thread_id(hwnd: HWND) -> u32 {
-    unsafe { GetWindowThreadProcessId(hwnd, None) }
-}
-
-/// Unhook a WinEvent hook
-pub fn unhook_win_event(hook: HWINEVENTHOOK) {
-    unsafe {
-        let _ = UnhookWinEvent(hook);
     }
 }
 
