@@ -197,6 +197,7 @@ pub(super) unsafe extern "system" fn wnd_proc(
                 if !s.dragging {
                     return false;
                 }
+                maybe_retarget_drag_display(s, hwnd, pt);
                 s.tray_offset = drag_offset_for_cursor(
                     s.drag_start_offset,
                     s.drag_start_mouse_x,
@@ -250,10 +251,9 @@ pub(super) unsafe extern "system" fn wnd_proc(
             if suppressed {
                 return LRESULT(0);
             }
-            // The theme's taskbar surface always renders on its authored
-            // display (see position_custom_theme_internal), so dragging is
-            // bounded to the taskbar it started on rather than handed off to
-            // a different monitor's taskbar.
+            // maybe_retarget_drag_display (called from WM_MOUSEMOVE) hands the
+            // widget off to whichever monitor's taskbar the cursor crosses
+            // onto, so tray_display_override already reflects the drop target.
             if was_dragging {
                 save_state_settings();
             } else if let Some((surface, object)) = mouse_target_at(hwnd, lparam) {

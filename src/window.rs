@@ -87,6 +87,9 @@ struct AppState {
 
     taskbar_index: usize,
     tray_offset: i32,
+    /// Monitor the widget is currently docked to, when it differs from the
+    /// active theme's configured display (set by dragging across monitors).
+    tray_display_override: Option<usize>,
     mouse_button_down: bool,
     dragging: bool,
     drag_start_mouse_x: i32,
@@ -413,7 +416,15 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
 
 fn effective_theme_from_state(state: &AppState) -> Option<ThemeDocument> {
     state.active_theme.as_ref().map(|theme| {
-        theme_engine::apply_mouse_action_overrides(theme, &state.mouse_action_overrides)
+        let mut theme =
+            theme_engine::apply_mouse_action_overrides(theme, &state.mouse_action_overrides);
+        if let Some(display) = state.tray_display_override {
+            if let Some(surface) = theme.surfaces.first_mut() {
+                surface.placement.reference.display = display;
+            }
+            theme.placement.reference.display = display;
+        }
+        theme
     })
 }
 
@@ -453,6 +464,7 @@ fn save_state_settings() {
         let mut persisted = load_settings();
         persisted.tray_offset = s.tray_offset;
         persisted.taskbar_index = s.taskbar_index;
+        persisted.tray_display = s.tray_display_override;
         persisted.legacy_placement_pending = false;
         persisted.widget_visible = true;
         persisted.legacy_visibility_pending = false;
@@ -619,6 +631,46 @@ fn drag_offset_for_cursor(
     max_offset: i32,
 ) -> i32 {
     (start_offset + start_cursor_x - cursor_x).clamp(0, max_offset)
+}
+
+/// While dragging, hand the widget off to whichever monitor's taskbar the
+/// cursor is currently over. Without this the widget stays glued to the
+/// taskbar it started on, so it can never be dragged onto another screen.
+fn maybe_retarget_drag_display(state: &mut AppState, hwnd: HWND, cursor: POINT) {
+    let current_display = effective_theme_from_state(state)
+        .map(|theme| theme.placement.reference.display)
+        .unwrap_or(0);
+    let monitors = native_interop::find_monitors();
+    let cursor_monitor = unsafe { MonitorFromPoint(cursor, MONITOR_DEFAULTTONULL) };
+    let Some(target_display) = monitors.iter().position(|m| m.handle == cursor_monitor) else {
+        return;
+    };
+    if target_display == current_display {
+        return;
+    }
+    let taskbars = native_interop::find_taskbars();
+    let Some(target_taskbar) = taskbars.iter().find(|taskbar| unsafe {
+        MonitorFromWindow(taskbar.hwnd, MONITOR_DEFAULTTOPRIMARY) == monitors[target_display].handle
+    }) else {
+        return;
+    };
+    let Some(taskbar_rect) = native_interop::get_taskbar_rect(target_taskbar.hwnd) else {
+        return;
+    };
+    let mut widget_rect = RECT::default();
+    unsafe {
+        let _ = GetWindowRect(hwnd, &mut widget_rect);
+    }
+    let widget_width = widget_rect.right - widget_rect.left;
+    let tray_left = tray_left_for_taskbar(target_taskbar.hwnd, taskbar_rect);
+    let max_offset = (tray_left - taskbar_rect.left - widget_width).max(0);
+
+    state.tray_display_override = Some(target_display);
+    state.tray_offset = 0;
+    state.drag_start_mouse_x = cursor.x;
+    state.drag_start_client_x = cursor.x - taskbar_rect.left;
+    state.drag_start_offset = 0;
+    state.drag_max_offset = max_offset;
 }
 
 fn now_unix_secs() -> u64 {
@@ -1587,6 +1639,7 @@ pub fn run() {
                 last_update_check_unix: settings.last_update_check_unix,
                 taskbar_index: settings.taskbar_index,
                 tray_offset: settings.tray_offset,
+                tray_display_override: settings.tray_display,
                 mouse_button_down: false,
                 dragging: false,
                 drag_start_mouse_x: 0,
@@ -2082,6 +2135,7 @@ fn reload_external_settings(hwnd: HWND) {
         state.poll_interval_ms = settings.poll_interval_ms;
         state.providers = settings.enabled_providers();
         state.taskbar_index = settings.taskbar_index;
+        state.tray_display_override = settings.tray_display;
         apply_language_to_state(state, language_override);
     }
     unsafe {
