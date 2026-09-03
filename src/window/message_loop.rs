@@ -143,6 +143,14 @@ pub(super) unsafe extern "system" fn wnd_proc(
                 state.drag_reposition_pending = false;
             }
             position_at_taskbar();
+            // Re-parenting onto a different monitor's taskbar (see
+            // maybe_retarget_drag_display / embed_as_child) silently steals
+            // mouse capture from Windows even though the button is still
+            // held, which WM_CAPTURECHANGED below would otherwise treat as
+            // the drag ending. Reclaim it so the drag keeps tracking.
+            if lock_state().as_ref().is_some_and(|s| s.dragging) {
+                SetCapture(hwnd);
+            }
             LRESULT(0)
         }
         WM_SETCURSOR if set_surface_cursor(hwnd) => LRESULT(1),
@@ -262,10 +270,19 @@ pub(super) unsafe extern "system" fn wnd_proc(
             LRESULT(0)
         }
         WM_CAPTURECHANGED | WM_CANCELMODE => {
-            if let Some(state) = lock_state().as_mut() {
-                state.mouse_button_down = false;
-                state.dragging = false;
-                state.drag_reposition_pending = false;
+            // SetParent (triggered mid-drag when crossing onto another
+            // monitor's taskbar) makes Windows send WM_CAPTURECHANGED even
+            // though the left button is still physically held. Only treat
+            // this as a real drag-end when the button has actually been
+            // released.
+            let button_still_down = msg == WM_CAPTURECHANGED
+                && (unsafe { GetAsyncKeyState(VK_LBUTTON.0 as i32) } as u16) & 0x8000 != 0;
+            if !button_still_down {
+                if let Some(state) = lock_state().as_mut() {
+                    state.mouse_button_down = false;
+                    state.dragging = false;
+                    state.drag_reposition_pending = false;
+                }
             }
             LRESULT(0)
         }
