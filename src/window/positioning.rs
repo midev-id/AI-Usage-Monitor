@@ -233,7 +233,21 @@ pub(super) fn position_custom_theme_internal(hwnd: HWND, theme: &ThemeDocument, 
             .and_then(|taskbar| {
                 native_interop::find_child_window(taskbar.hwnd, "TrayNotifyWnd")
                     .and_then(native_interop::get_window_rect_safe)
-                    .or(Some(taskbar.rect))
+                    .or_else(|| {
+                        // Secondary taskbars have no TrayNotifyWnd (no tray
+                        // icons/clock chevron there). Falling back to the
+                        // full taskbar rect breaks the right-anchored math
+                        // below, which expects a narrow reference near the
+                        // taskbar's right edge — it instead lands the
+                        // surface entirely off the taskbar. Collapse to a
+                        // zero-width rect at the right edge instead.
+                        Some(RECT {
+                            left: taskbar.rect.right,
+                            top: taskbar.rect.top,
+                            right: taskbar.rect.right,
+                            bottom: taskbar.rect.bottom,
+                        })
+                    })
             })
             .unwrap_or(display.rect),
     };
