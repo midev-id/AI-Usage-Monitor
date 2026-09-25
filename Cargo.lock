@@ -30,6 +30,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "ai-usage-monitor"
+version = "2.5.13"
+dependencies = [
+ "dirs",
+ "eframe",
+ "epaint_default_fonts",
+ "heck",
+ "image",
+ "lucide-icons",
+ "native-tls",
+ "oxifont-subset",
+ "proc-macro2",
+ "raw-window-handle",
+ "serde",
+ "serde_json",
+ "toml 0.8.23",
+ "ureq",
+ "windows",
+ "winres",
+ "zip",
+]
+
+[[package]]
 name = "android-activity"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -242,29 +265,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ced0551234e87afee12411d535648dd89d2e7f34c78b753395567aff3d447ff"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "claude-code-usage-monitor"
-version = "2.5.13"
-dependencies = [
- "dirs",
- "eframe",
- "epaint_default_fonts",
- "heck",
- "image",
- "lucide-icons",
- "native-tls",
- "oxifont-subset",
- "proc-macro2",
- "raw-window-handle",
- "serde",
- "serde_json",
- "toml 0.8.23",
- "ureq",
- "windows",
- "winres",
- "zip",
 ]
 
 [[package]]

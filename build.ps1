@@ -12,10 +12,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$mainRepo = "C:\Users\MAHDI\Documents\Autopreneur\Claude-Code-Usage-Monitor"
+$mainRepo = "C:\Users\MAHDI\Documents\Autopreneur\AI-Usage-Monitor"
 $buildRoot = (Get-Location).Path
-$source = Join-Path $buildRoot "target\release\claude-code-usage-monitor.exe"
-$destination = Join-Path $mainRepo "claude-code-usage-monitor.exe"
+$source = Join-Path $buildRoot "target\release\ai-usage-monitor.exe"
+$destination = Join-Path $mainRepo "ai-usage-monitor.exe"
 
 if (-not $SkipBuild) {
     Write-Host "Building release in: $buildRoot"
@@ -33,8 +33,8 @@ Write-Host "Copied to: $destination"
 Write-Host ("  Size: {0:N1} MB  Time: {1}" -f ($item.Length / 1MB), $item.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss"))
 
 if (-not $NoRestart) {
-    Write-Host "Restarting claude-code-usage-monitor..."
-    Get-Process claude-code-usage-monitor -ErrorAction SilentlyContinue | Stop-Process -Force
+    Write-Host "Restarting ai-usage-monitor..."
+    Get-Process ai-usage-monitor -ErrorAction SilentlyContinue | Stop-Process -Force
     Start-Sleep -Milliseconds 500
     Start-Process -FilePath $destination
     Write-Host "Started: $destination"

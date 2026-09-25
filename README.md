@@ -1,7 +1,9 @@
 ![Windows](https://img.shields.io/badge/platform-Windows-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# Claude Code Usage Monitor
+# AI Usage Monitor
+
+Fork of [CodeZeno/Claude-Code-Usage-Monitor](https://github.com/CodeZeno/Claude-Code-Usage-Monitor), renamed because it now tracks more providers than Claude Code.
 
 ![Screenshot](.github/animation.gif)
 
@@ -75,21 +77,9 @@ If you only ever run Claude Code inside the Claude desktop app, there is nothing
 
 ## Install
 
-Install the latest version from WinGet:
-
-```powershell
-winget install CodeZeno.ClaudeCodeUsageMonitor
-```
-
-If you prefer not to use WinGet, you can still download the latest `claude-code-usage-monitor.exe` from the [Releases](https://github.com/CodeZeno/Claude-Code-Usage-Monitor/releases) page and run it directly.
+Download [`ai-usage-monitor.exe`](https://github.com/midev-id/AI-Usage-Monitor/raw/main/ai-usage-monitor.exe) from the repository root, or build it yourself with `cargo build --release`, and run it directly. There is no WinGet package for this fork.
 
 ## Use
-
-After installing with WinGet, run:
-
-```powershell
-claude-code-usage-monitor
-```
 
 Once running, it will appear in your taskbar and as a persistent application icon in the notification area.
 
@@ -101,7 +91,7 @@ Once running, it will appear in your taskbar and as a persistent application ico
 You can also open the dashboard directly:
 
 ```powershell
-claude-code-usage-monitor --dashboard
+ai-usage-monitor --dashboard
 ```
 
 ### Custom themes
@@ -186,13 +176,13 @@ Context menus currently use the native Windows menu renderer. Windows therefore 
 If you need to troubleshoot startup or visibility issues, run:
 
 ```powershell
-claude-code-usage-monitor --diagnose
+ai-usage-monitor --diagnose
 ```
 
 This writes a log file to:
 
 ```text
-%TEMP%\claude-code-usage-monitor.log
+%TEMP%\ai-usage-monitor.log
 ```
 
 Settings are saved to:

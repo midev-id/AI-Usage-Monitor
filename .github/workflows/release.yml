@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  RELEASE_ASSET_NAME: claude-code-usage-monitor.exe
+  RELEASE_ASSET_NAME: ai-usage-monitor.exe
   WINGET_PACKAGE_ID: CodeZeno.ClaudeCodeUsageMonitor
 
 jobs:

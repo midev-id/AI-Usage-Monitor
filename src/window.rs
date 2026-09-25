@@ -485,7 +485,7 @@ fn tray_icon_tooltip_from_state() -> String {
     let state = lock_state();
     match state.as_ref() {
         Some(state) => state.language.strings().window_title.to_string(),
-        None => "Claude Code Usage Monitor".to_string(),
+        None => "AI Usage Monitor".to_string(),
     }
 }
 
