@@ -47,18 +47,31 @@ pub(super) unsafe extern "system" fn wnd_proc(
                     };
                     match auth_watch {
                         Some((true, watch_mode, previous_snapshot)) => {
-                            let current_snapshot = poller::credential_watch_snapshot(watch_mode);
-                            if current_snapshot != previous_snapshot {
-                                let mut state = lock_state();
-                                if let Some(s) = state.as_mut() {
-                                    if s.auth_error_paused_polling
-                                        && s.auth_watch_mode == watch_mode
-                                    {
-                                        s.auth_watch_snapshot = current_snapshot;
+                            // The widget is a child of Explorer's taskbar, so
+                            // blocking this thread on a process spawn hangs the
+                            // taskbar too (and at logon WSL can take minutes).
+                            if CREDENTIAL_WATCH_IN_FLIGHT
+                                .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+                                .is_ok()
+                            {
+                                let send_hwnd = SendHwnd::from_hwnd(hwnd);
+                                std::thread::spawn(move || {
+                                    let current_snapshot =
+                                        poller::credential_watch_snapshot(watch_mode);
+                                    if current_snapshot != previous_snapshot {
+                                        let mut state = lock_state();
+                                        if let Some(s) = state.as_mut() {
+                                            if s.auth_error_paused_polling
+                                                && s.auth_watch_mode == watch_mode
+                                            {
+                                                s.auth_watch_snapshot = current_snapshot;
+                                            }
+                                        }
+                                        drop(state);
+                                        request_poll(send_hwnd.to_hwnd());
                                     }
-                                }
-                                drop(state);
-                                request_poll(hwnd);
+                                    CREDENTIAL_WATCH_IN_FLIGHT.store(false, Ordering::Release);
+                                });
                             }
                         }
                         Some((false, _, _)) => {

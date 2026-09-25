@@ -1869,7 +1869,7 @@
           "name": "dark OpenCode Zen spend segments",
           "render": "system.dark",
           "parent": "opencode-zen-provider",
-          "y": "5",
+          "y": "16",
           "width": "5 * 16 - 1",
           "height": "13",
           "content": {
@@ -1894,12 +1894,12 @@
           "render": "system.dark",
           "parent": "opencode-zen-provider",
           "x": "5 * 16 - 1 + 4",
-          "y": "5",
+          "y": "16",
           "width": "62",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "${opencode_zen.credits.balance:0.00}",
+            "template": "{opencode_zen.credits.percentage:0}%",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -1916,7 +1916,7 @@
           "name": "light OpenCode Zen spend segments",
           "render": "1 - system.dark",
           "parent": "opencode-zen-provider",
-          "y": "5",
+          "y": "16",
           "width": "5 * 16 - 1",
           "height": "13",
           "content": {
@@ -1941,106 +1941,12 @@
           "render": "1 - system.dark",
           "parent": "opencode-zen-provider",
           "x": "5 * 16 - 1 + 4",
-          "y": "5",
+          "y": "16",
           "width": "62",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "${opencode_zen.credits.balance:0.00}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#146B4EFF"
-            }
-          }
-        },
-        {
-          "id": "opencode-zen-cap-segments-dark",
-          "name": "dark OpenCode Zen cap segments",
-          "render": "system.dark",
-          "parent": "opencode-zen-provider",
-          "y": "28",
-          "width": "5 * 16 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "opencode_zen.credits.percentage",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#1FA97AFF"
-            },
-            "track": {
-              "color": "#444444FF"
-            },
-            "corner_radius": "2",
-            "segments": 7,
-            "segments_expression": "5",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "opencode-zen-cap-value-dark",
-          "name": "dark OpenCode Zen cap value",
-          "render": "system.dark",
-          "parent": "opencode-zen-provider",
-          "x": "5 * 16 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "/${opencode_zen.credits.total:0.00}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#7CE0C0FF"
-            }
-          }
-        },
-        {
-          "id": "opencode-zen-cap-segments-light",
-          "name": "light OpenCode Zen cap segments",
-          "render": "1 - system.dark",
-          "parent": "opencode-zen-provider",
-          "y": "28",
-          "width": "5 * 16 - 1",
-          "height": "13",
-          "content": {
-            "type": "progress",
-            "value": "opencode_zen.credits.percentage",
-            "direction": "left_to_right",
-            "fill": {
-              "color": "#1FA97AFF"
-            },
-            "track": {
-              "color": "#AAAAAAFF"
-            },
-            "corner_radius": "2",
-            "segments": 7,
-            "segments_expression": "5",
-            "segment_gap": "1"
-          }
-        },
-        {
-          "id": "opencode-zen-cap-value-light",
-          "name": "light OpenCode Zen cap value",
-          "render": "1 - system.dark",
-          "parent": "opencode-zen-provider",
-          "x": "5 * 16 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "/${opencode_zen.credits.total:0.00}",
+            "template": "{opencode_zen.credits.percentage:0}%",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",

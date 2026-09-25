@@ -429,8 +429,8 @@ fn starter_theme_round_trips_and_validates() {
     // seven providers over two windows in two modes, plus a credit overlay on
     // the weekly row of the two providers that report credits alongside a
     // session/weekly window (OpenRouter and OpenCode Zen have no such window
-    // of their own, so their two rows each count as an ordinary provider
-    // rather than an extra overlay). Every provider fixes its two bars at 5
+    // of their own, so their rows count as an ordinary provider rather than
+    // an extra overlay; Zen shows a single spend row). Every provider fixes its two bars at 5
     // and 7 segments (one per hour/day) instead of scaling with the
     // enabled-provider count; only the dollar-based credit overlay keeps 10
     // segments for finer granularity.
@@ -444,7 +444,7 @@ fn starter_theme_round_trips_and_validates() {
             5, 5, 7, 7, // opencode session/weekly, dark/light
             10, 10, 10, 10, // claude + codex credit overlays, dark/light
             5, 5, 7, 7, // openrouter balance/total, dark/light
-            5, 5, 7, 7, // opencode zen spent/cap, dark/light
+            5, 5, // opencode zen spent, dark/light
         ]
     );
     assert!(theme.surfaces[0]

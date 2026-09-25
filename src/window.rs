@@ -163,6 +163,9 @@ const TASKBAR_WATCH_INTERVAL_SECS: u64 = 2;
 static CURRENT_DPI: AtomicU32 = AtomicU32::new(96);
 static POLL_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
 static POLL_PENDING: AtomicBool = AtomicBool::new(false);
+/// Credential watches can spawn `wsl.exe` or a provider CLI, so they run off
+/// the UI thread; this keeps slow ones from piling up across poll ticks.
+static CREDENTIAL_WATCH_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
 
 /// Re-query the monitor DPI for our window and update the cached value.
 /// Uses GetDpiForWindow which returns the live DPI (unlike GetDpiForSystem
