@@ -27,6 +27,10 @@ pub struct SettingsFile {
     pub tray_offset: i32,
     #[serde(default, skip_serializing)]
     pub taskbar_index: usize,
+    /// Monitor the widget was last dragged to, overriding the theme's
+    /// configured display until the user drags it to a different one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tray_display: Option<usize>,
     /// True only when the settings file still contains the pre-theme placement
     /// fields. While this remains true, ordinary settings saves preserve those
     /// fields so only the startup migration can consume them.
@@ -73,6 +77,7 @@ impl Default for SettingsFile {
         Self {
             tray_offset: 0,
             taskbar_index: 0,
+            tray_display: None,
             legacy_placement_pending: false,
             widget_visible: true,
             legacy_visibility_pending: false,
